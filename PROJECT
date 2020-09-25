@@ -1,0 +1,7 @@
+domain: coderanger.net
+repo: github.com/coderanger/rabbitmq-operator
+resources:
+- group: rabbitmq
+  kind: RabbitUser
+  version: v1beta1
+version: "2"

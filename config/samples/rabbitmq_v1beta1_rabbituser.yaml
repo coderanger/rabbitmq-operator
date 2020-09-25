@@ -1,0 +1,7 @@
+apiVersion: rabbitmq.coderanger.net/v1beta1
+kind: RabbitUser
+metadata:
+  name: rabbituser-sample
+spec:
+  # Add fields here
+  foo: bar

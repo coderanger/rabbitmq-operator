@@ -1,0 +1,24 @@
+# permissions for end users to edit rabbitusers.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: rabbituser-editor-role
+rules:
+- apiGroups:
+  - rabbitmq.coderanger.net
+  resources:
+  - rabbitusers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - rabbitmq.coderanger.net
+  resources:
+  - rabbitusers/status
+  verbs:
+  - get
