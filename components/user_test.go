@@ -17,14 +17,45 @@ limitations under the License.
 package components
 
 import (
+	"fmt"
+
 	rabbithole "github.com/michaelklishin/rabbit-hole"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gstruct"
+	"github.com/onsi/gomega/types"
 
 	"github.com/coderanger/controller-utils/tests"
 	rabbitv1beta1 "github.com/coderanger/rabbitmq-operator/api/v1beta1"
 )
+
+type matchRabbitPasswordMatcher struct {
+	expected string
+}
+
+func MatchRabbitPassword(password string) types.GomegaMatcher {
+	return &matchRabbitPasswordMatcher{expected: password}
+}
+
+func (matcher *matchRabbitPasswordMatcher) Match(actual interface{}) (bool, error) {
+	hash, ok := actual.(string)
+	if !ok {
+		return false, fmt.Errorf("MatchRabbitPassword matcher expects a string")
+	}
+	hash2, err := hashRabbitPassword(matcher.expected, rabbithole.HashingAlgorithmSHA256, hash)
+	if err != nil {
+		return false, err
+	}
+	return hash == hash2, nil
+}
+
+func (matcher *matchRabbitPasswordMatcher) FailureMessage(actual interface{}) (message string) {
+	return fmt.Sprintf("Expected %# to match the password %s", actual, matcher.expected)
+}
+
+func (matcher *matchRabbitPasswordMatcher) NegatedFailureMessage(actual interface{}) (message string) {
+	return fmt.Sprintf("Expected %#v not to match the password %s", actual, matcher.expected)
+}
 
 var _ = Describe("User component", func() {
 	var obj *rabbitv1beta1.RabbitUser
@@ -49,31 +80,78 @@ var _ = Describe("User component", func() {
 
 	It("creates a user", func() {
 		helper.MustReconcile()
-		Expect(rabbit.Users).To(ConsistOf(MatchFields(IgnoreExtras, Fields{
+		Expect(rabbit.Users).To(ConsistOf(PointTo(MatchFields(IgnoreExtras, Fields{
 			"Name": Equal("testing"),
 			"Tags": Equal(""),
-		})))
+		}))))
 		Expect(helper.Events).To(Receive(Equal("Normal Created RabbitMQ user testing created")))
 	})
 
 	It("applies the Username field", func() {
 		obj.Spec.Username = "other"
 		helper.MustReconcile()
-		Expect(rabbit.Users).To(ConsistOf(MatchFields(IgnoreExtras, Fields{
+		Expect(rabbit.Users).To(ConsistOf(PointTo(MatchFields(IgnoreExtras, Fields{
 			"Name": Equal("other"),
 			"Tags": Equal(""),
-		})))
+		}))))
 		Expect(helper.Events).To(Receive(Equal("Normal Created RabbitMQ user other created")))
 	})
 
 	It("applies the Tags field", func() {
 		obj.Spec.Tags = "administrator"
 		helper.MustReconcile()
-		Expect(rabbit.Users).To(ConsistOf(MatchFields(IgnoreExtras, Fields{
+		Expect(rabbit.Users).To(ConsistOf(PointTo(MatchFields(IgnoreExtras, Fields{
 			"Name": Equal("testing"),
 			"Tags": Equal("administrator"),
-		})))
+		}))))
 		Expect(helper.Events).To(Receive(Equal("Normal Created RabbitMQ user testing created")))
+	})
+
+	It("does not update an existing user with nothing to change", func() {
+		rabbit.Users = []*rabbithole.UserInfo{
+			{
+				Name:             "testing",
+				PasswordHash:     "KDYrITM0cP6OZ4+ZoB0+T1SY9Ro1hbOgH4iiaPbLAAoPb0Xn", // Hash("supersecret")
+				HashingAlgorithm: rabbithole.HashingAlgorithmSHA256,
+			},
+		}
+		helper.MustReconcile()
+		Expect(helper.Events).ToNot(Receive())
+	})
+
+	It("updates an existing user with the wrong password", func() {
+		rabbit.Users = []*rabbithole.UserInfo{
+			{
+				Name:             "testing",
+				PasswordHash:     "vL4eIulfhM6xfHfWRLexc8y2dmCwSuDVc2ex2FWkwmKip4kX", // Hash("other")
+				HashingAlgorithm: rabbithole.HashingAlgorithmSHA256,
+			},
+		}
+		helper.MustReconcile()
+		Expect(rabbit.Users).To(ConsistOf(PointTo(MatchFields(IgnoreExtras, Fields{
+			"Name":             Equal("testing"),
+			"PasswordHash":     MatchRabbitPassword("supersecret"),
+			"HashingAlgorithm": Equal(rabbithole.HashingAlgorithmSHA256),
+		}))))
+		Expect(helper.Events).To(Receive(Equal("Normal Updated RabbitMQ user testing updated")))
+	})
+
+	It("updates an existing user with the wrong tags", func() {
+		obj.Spec.Tags = "monitoring"
+		rabbit.Users = []*rabbithole.UserInfo{
+			{
+				Name:             "testing",
+				Tags:             "viewer",
+				PasswordHash:     "KDYrITM0cP6OZ4+ZoB0+T1SY9Ro1hbOgH4iiaPbLAAoPb0Xn", // Hash("supersecret")
+				HashingAlgorithm: rabbithole.HashingAlgorithmSHA256,
+			},
+		}
+		helper.MustReconcile()
+		Expect(rabbit.Users).To(ConsistOf(PointTo(MatchFields(IgnoreExtras, Fields{
+			"Name": Equal("testing"),
+			"Tags": Equal("monitoring"),
+		}))))
+		Expect(helper.Events).To(Receive(Equal("Normal Updated RabbitMQ user testing updated")))
 	})
 })
 

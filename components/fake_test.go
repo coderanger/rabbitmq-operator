@@ -24,18 +24,18 @@ import (
 )
 
 type fakeRabbitClient struct {
-	Users       []rabbithole.UserInfo
-	Vhosts      []rabbithole.VhostInfo
-	Policies    map[string]map[string]rabbithole.Policy
-	Permissions map[string][]rabbithole.PermissionInfo
+	Users       []*rabbithole.UserInfo
+	Vhosts      []*rabbithole.VhostInfo
+	Policies    map[string]map[string]*rabbithole.Policy
+	Permissions map[string][]*rabbithole.PermissionInfo
 }
 
 func newFakeRabbitClient() *fakeRabbitClient {
 	return &fakeRabbitClient{
-		Users:       []rabbithole.UserInfo{},
-		Vhosts:      []rabbithole.VhostInfo{},
-		Policies:    make(map[string]map[string]rabbithole.Policy),
-		Permissions: make(map[string][]rabbithole.PermissionInfo),
+		Users:       []*rabbithole.UserInfo{},
+		Vhosts:      []*rabbithole.VhostInfo{},
+		Policies:    make(map[string]map[string]*rabbithole.Policy),
+		Permissions: make(map[string][]*rabbithole.PermissionInfo),
 	}
 }
 
@@ -44,13 +44,17 @@ func (frc *fakeRabbitClient) Factory(_uri, _user, _pass string, _t *http.Transpo
 }
 
 func (frc *fakeRabbitClient) ListUsers() ([]rabbithole.UserInfo, error) {
-	return frc.Users, nil
+	users := []rabbithole.UserInfo{}
+	for _, user := range frc.Users {
+		users = append(users, *user)
+	}
+	return users, nil
 }
 
 func (frc *fakeRabbitClient) GetUser(name string) (*rabbithole.UserInfo, error) {
 	for _, user := range frc.Users {
 		if user.Name == name {
-			return &user, nil
+			return user, nil
 		}
 	}
 	return nil, rabbithole.ErrorResponse{StatusCode: 404}
@@ -65,12 +69,16 @@ func (frc *fakeRabbitClient) PutUser(username string, settings rabbithole.UserSe
 			return &http.Response{StatusCode: 200}, nil
 		}
 	}
-	frc.Users = append(frc.Users, rabbithole.UserInfo{Name: username, PasswordHash: settings.Password, Tags: settings.Tags})
+	frc.Users = append(frc.Users, &rabbithole.UserInfo{Name: username, PasswordHash: settings.Password, Tags: settings.Tags})
 	return &http.Response{StatusCode: 201}, nil
 }
 
 func (frc *fakeRabbitClient) ListVhosts() ([]rabbithole.VhostInfo, error) {
-	return frc.Vhosts, nil
+	vhosts := []rabbithole.VhostInfo{}
+	for _, vhost := range frc.Vhosts {
+		vhosts = append(vhosts, *vhost)
+	}
+	return vhosts, nil
 }
 
 func (frc *fakeRabbitClient) PutVhost(vhost string, _settings rabbithole.VhostSettings) (*http.Response, error) {
@@ -79,7 +87,7 @@ func (frc *fakeRabbitClient) PutVhost(vhost string, _settings rabbithole.VhostSe
 			return &http.Response{StatusCode: 200}, nil
 		}
 	}
-	frc.Vhosts = append(frc.Vhosts, rabbithole.VhostInfo{Name: vhost})
+	frc.Vhosts = append(frc.Vhosts, &rabbithole.VhostInfo{Name: vhost})
 	return &http.Response{StatusCode: 201}, nil
 }
 
@@ -88,7 +96,7 @@ func (frc *fakeRabbitClient) ListPoliciesIn(vhost string) (rec []rabbithole.Poli
 	vhostPolicies, ok := frc.Policies[vhost]
 	if ok {
 		for _, policy := range vhostPolicies {
-			policies = append(policies, policy)
+			policies = append(policies, *policy)
 		}
 	}
 	return policies, nil
@@ -97,11 +105,11 @@ func (frc *fakeRabbitClient) ListPoliciesIn(vhost string) (rec []rabbithole.Poli
 func (frc *fakeRabbitClient) PutPolicy(vhost string, name string, policy rabbithole.Policy) (res *http.Response, err error) {
 	vhostPolicies, ok := frc.Policies[vhost]
 	if !ok {
-		vhostPolicies = map[string]rabbithole.Policy{}
+		vhostPolicies = map[string]*rabbithole.Policy{}
 		frc.Policies[vhost] = vhostPolicies
 	}
 	_, ok = vhostPolicies[name]
-	vhostPolicies[name] = policy
+	vhostPolicies[name] = &policy
 	if ok {
 		return &http.Response{StatusCode: 200}, nil
 	} else {
@@ -121,7 +129,16 @@ func (frc *fakeRabbitClient) DeletePolicy(vhost string, name string) (res *http.
 }
 
 func (frc *fakeRabbitClient) ListPermissionsOf(username string) (rec []rabbithole.PermissionInfo, err error) {
-	return frc.Permissions[username], nil
+	userPerms, ok := frc.Permissions[username]
+	if !ok {
+		// TODO?
+		return []rabbithole.PermissionInfo{}, nil
+	}
+	perms := []rabbithole.PermissionInfo{}
+	for _, perm := range userPerms {
+		perms = append(perms, *perm)
+	}
+	return perms, nil
 }
 func (frc *fakeRabbitClient) UpdatePermissionsIn(vhost, username string, permissions rabbithole.Permissions) (res *http.Response, err error) {
 	for key := range frc.Permissions[username] {
@@ -134,7 +151,7 @@ func (frc *fakeRabbitClient) UpdatePermissionsIn(vhost, username string, permiss
 		}
 	}
 	//Create
-	frc.Permissions[username] = append(frc.Permissions[username], rabbithole.PermissionInfo{
+	frc.Permissions[username] = append(frc.Permissions[username], &rabbithole.PermissionInfo{
 		Vhost:     vhost,
 		User:      username,
 		Configure: permissions.Configure,
