@@ -78,3 +78,7 @@ CONTROLLER_GEN=$(GOBIN)/controller-gen
 else
 CONTROLLER_GEN=$(shell which controller-gen)
 endif
+
+# Display a coverage report
+cover:
+	go tool cover -html=cover.out
