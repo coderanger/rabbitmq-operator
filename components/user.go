@@ -94,7 +94,7 @@ func (comp *userComponent) Reconcile(ctx *cu.Context) (cu.Result, error) {
 			return cu.Result{}, errors.Wrap(err, "error hashing password for put")
 		}
 
-		//
+		// Put the user, this will create or update depending on if the user already exists.
 		resp, err := rmqc.PutUser(username, rabbithole.UserSettings{PasswordHash: hashedPassword, HashingAlgorithm: DEFAULT_HASH_ALGORITHM, Tags: obj.Spec.Tags})
 		if err != nil {
 			return cu.Result{}, errors.Wrapf(err, "error putting user %s", username)

@@ -50,7 +50,7 @@ func (matcher *matchRabbitPasswordMatcher) Match(actual interface{}) (bool, erro
 }
 
 func (matcher *matchRabbitPasswordMatcher) FailureMessage(actual interface{}) (message string) {
-	return fmt.Sprintf("Expected %# to match the password %s", actual, matcher.expected)
+	return fmt.Sprintf("Expected %#v to match the password %s", actual, matcher.expected)
 }
 
 func (matcher *matchRabbitPasswordMatcher) NegatedFailureMessage(actual interface{}) (message string) {
@@ -87,6 +87,13 @@ var _ = Describe("User component", func() {
 		Expect(helper.Events).To(Receive(Equal("Normal Created RabbitMQ user testing created")))
 	})
 
+	It("creates a user only once", func() {
+		helper.MustReconcile()
+		Expect(helper.Events).To(Receive(Equal("Normal Created RabbitMQ user testing created")))
+		helper.MustReconcile()
+		Expect(helper.Events).ToNot(Receive())
+	})
+
 	It("applies the Username field", func() {
 		obj.Spec.Username = "other"
 		helper.MustReconcile()
@@ -103,6 +110,17 @@ var _ = Describe("User component", func() {
 		Expect(rabbit.Users).To(ConsistOf(PointTo(MatchFields(IgnoreExtras, Fields{
 			"Name": Equal("testing"),
 			"Tags": Equal("administrator"),
+		}))))
+		Expect(helper.Events).To(Receive(Equal("Normal Created RabbitMQ user testing created")))
+	})
+
+	It("applies the password value", func() {
+		helper.Ctx.Data["password"] = "extrasecret"
+		helper.MustReconcile()
+		Expect(rabbit.Users).To(ConsistOf(PointTo(MatchFields(IgnoreExtras, Fields{
+			"Name":             Equal("testing"),
+			"PasswordHash":     MatchRabbitPassword("extrasecret"),
+			"HashingAlgorithm": Equal(rabbithole.HashingAlgorithmSHA256),
 		}))))
 		Expect(helper.Events).To(Receive(Equal("Normal Created RabbitMQ user testing created")))
 	})

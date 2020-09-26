@@ -69,7 +69,7 @@ func (frc *fakeRabbitClient) PutUser(username string, settings rabbithole.UserSe
 			return &http.Response{StatusCode: 200}, nil
 		}
 	}
-	frc.Users = append(frc.Users, &rabbithole.UserInfo{Name: username, PasswordHash: settings.Password, Tags: settings.Tags})
+	frc.Users = append(frc.Users, &rabbithole.UserInfo{Name: username, PasswordHash: settings.PasswordHash, HashingAlgorithm: settings.HashingAlgorithm, Tags: settings.Tags})
 	return &http.Response{StatusCode: 201}, nil
 }
 
