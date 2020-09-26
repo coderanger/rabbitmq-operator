@@ -70,6 +70,14 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "RabbitUser")
 		os.Exit(1)
 	}
+	if err = (&controllers.RabbitVhostReconciler{
+		Client: mgr.GetClient(),
+		Log:    ctrl.Log.WithName("controllers").WithName("RabbitVhost"),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "RabbitVhost")
+		os.Exit(1)
+	}
 	// +kubebuilder:scaffold:builder
 
 	setupLog.Info("starting manager")

@@ -4,4 +4,7 @@ resources:
 - group: rabbitmq
   kind: RabbitUser
   version: v1beta1
+- group: rabbitmq
+  kind: RabbitVhost
+  version: v1beta1
 version: "2"

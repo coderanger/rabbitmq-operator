@@ -26,3 +26,23 @@ rules:
   - get
   - patch
   - update
+- apiGroups:
+  - rabbitmq.coderanger.net
+  resources:
+  - rabbitvhosts
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - rabbitmq.coderanger.net
+  resources:
+  - rabbitvhosts/status
+  verbs:
+  - get
+  - patch
+  - update

@@ -14,47 +14,35 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package controllers
+package components
 
 import (
-	"path/filepath"
 	"testing"
 
+	"github.com/coderanger/controller-utils/tests"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"sigs.k8s.io/controller-runtime/pkg/envtest/printer"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	"github.com/coderanger/controller-utils/tests"
-
-	rabbitmqv1beta1 "github.com/coderanger/rabbitmq-operator/api/v1beta1"
-	// +kubebuilder:scaffold:imports
+	rabbitv1beta1 "github.com/coderanger/rabbitmq-operator/api/v1beta1"
 )
 
-var suiteHelper *tests.FunctionalSuiteHelper
+var suiteHelper *tests.UnitSuiteHelper
 
 func TestControllers(t *testing.T) {
 	RegisterFailHandler(Fail)
 
 	RunSpecsWithDefaultAndCustomReporters(t,
-		"Controller Suite",
+		"Components Suite",
 		[]Reporter{printer.NewlineReporter{}})
 }
 
-var _ = BeforeSuite(func(done Done) {
+var _ = BeforeSuite(func() {
 	logf.SetLogger(zap.LoggerTo(GinkgoWriter, true))
 
-	By("bootstrapping test environment")
-	suiteHelper = tests.Functional().
-		CRDPath(filepath.Join("..", "config", "crd", "bases")).
-		API(rabbitmqv1beta1.AddToScheme).
+	suiteHelper = tests.Unit().
+		API(rabbitv1beta1.AddToScheme).
 		MustBuild()
-
-	close(done)
-}, 60)
-
-var _ = AfterSuite(func() {
-	By("tearing down the test environment")
-	suiteHelper.MustStop()
 })

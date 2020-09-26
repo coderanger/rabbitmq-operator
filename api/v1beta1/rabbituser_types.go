@@ -1,5 +1,6 @@
 /*
 Copyright 2020 Noah Kantrowitz
+Copyright 2019-2020 Ridecell, Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -20,22 +21,29 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
+// RabbitmqPermission defines a single user permissions entry.
+type RabbitPermission struct {
+	// Vhost this applies to.
+	Vhost string `json:"vhost"`
+	// Configuration permissions.
+	Configure string `json:"configure,omitempty"`
+	// Write permissions.
+	Write string `json:"write,omitempty"`
+	// Read permissions.
+	Read string `json:"read,omitempty"`
+}
 
 // RabbitUserSpec defines the desired state of RabbitUser
 type RabbitUserSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
-
-	// Foo is an example field of RabbitUser. Edit RabbitUser_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
+	Username    string             `json:"username"`
+	Tags        string             `json:"tags,omitempty"`
+	Permissions []RabbitPermission `json:"permissions,omitempty"`
+	// TODO TopicPermissions
+	Connection RabbitConnection `json:"connection,omitempty"`
 }
 
 // RabbitUserStatus defines the observed state of RabbitUser
 type RabbitUserStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
 }
 
 // +kubebuilder:object:root=true

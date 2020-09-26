@@ -1,0 +1,24 @@
+# permissions for end users to edit rabbitvhosts.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: rabbitvhost-editor-role
+rules:
+- apiGroups:
+  - rabbitmq.coderanger.net
+  resources:
+  - rabbitvhosts
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - rabbitmq.coderanger.net
+  resources:
+  - rabbitvhosts/status
+  verbs:
+  - get

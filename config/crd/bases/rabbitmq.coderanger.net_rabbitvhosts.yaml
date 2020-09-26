@@ -6,18 +6,18 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.2.5
   creationTimestamp: null
-  name: rabbitusers.rabbitmq.coderanger.net
+  name: rabbitvhosts.rabbitmq.coderanger.net
 spec:
   group: rabbitmq.coderanger.net
   names:
-    kind: RabbitUser
-    listKind: RabbitUserList
-    plural: rabbitusers
-    singular: rabbituser
+    kind: RabbitVhost
+    listKind: RabbitVhostList
+    plural: rabbitvhosts
+    singular: rabbitvhost
   scope: Namespaced
   validation:
     openAPIV3Schema:
-      description: RabbitUser is the Schema for the rabbitusers API
+      description: RabbitVhost is the Schema for the rabbitvhosts API
       properties:
         apiVersion:
           description: 'APIVersion defines the versioned schema of this representation
@@ -32,10 +32,9 @@ spec:
         metadata:
           type: object
         spec:
-          description: RabbitUserSpec defines the desired state of RabbitUser
+          description: RabbitVhostSpec defines the desired state of RabbitVhost
           properties:
             connection:
-              description: TODO TopicPermissions
               properties:
                 host:
                   type: string
@@ -59,36 +58,36 @@ spec:
                 vhost:
                   type: string
               type: object
-            permissions:
-              items:
-                description: RabbitmqPermission defines a single user permissions
-                  entry.
+            policies:
+              additionalProperties:
                 properties:
-                  configure:
-                    description: Configuration permissions.
+                  applyTo:
+                    description: 'What this policy applies to: "queues", "exchanges",
+                      etc.'
                     type: string
-                  read:
-                    description: Read permissions.
+                  definition:
+                    description: Additional arguments added to the entities (queues,
+                      exchanges or both) that match a policy
                     type: string
-                  vhost:
-                    description: Vhost this applies to.
+                  pattern:
+                    description: Regular expression pattern used to match queues and
+                      exchanges, , e.g. "^ha\..+"
                     type: string
-                  write:
-                    description: Write permissions.
-                    type: string
+                  priority:
+                    description: Numeric priority of this policy.
+                    type: integer
                 required:
-                - vhost
+                - definition
+                - pattern
                 type: object
-              type: array
-            tags:
+              type: object
+            skipUser:
+              type: boolean
+            vhostName:
               type: string
-            username:
-              type: string
-          required:
-          - username
           type: object
         status:
-          description: RabbitUserStatus defines the observed state of RabbitUser
+          description: RabbitVhostStatus defines the observed state of RabbitVhost
           type: object
       type: object
   version: v1beta1
