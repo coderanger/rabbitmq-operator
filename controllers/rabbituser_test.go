@@ -55,10 +55,7 @@ var _ = Describe("RabbitUser controller", func() {
 		c.EventuallyGetName("testing-password", secret)
 
 		rmqcUser := connectUser("testing", string(secret.Data["password"]))
-		Eventually(func() bool {
-			_, err := rmqcUser.Whoami()
-			return err == nil
-		}).Should(BeTrue())
+		Eventually(rmqcUser.Whoami).ShouldNot(BeNil())
 	})
 
 	It("sets vhost permissions", func() {
@@ -84,10 +81,7 @@ var _ = Describe("RabbitUser controller", func() {
 		c.EventuallyGetName("testing-password", secret)
 
 		rmqcUser := connectUser("testing", string(secret.Data["password"]))
-		Eventually(func() bool {
-			_, err := rmqcUser.Whoami()
-			return err == nil
-		}).Should(BeTrue())
+		Eventually(rmqcUser.Whoami).ShouldNot(BeNil())
 
 		vhosts, err := rmqcUser.ListVhosts()
 		Expect(err).ToNot(HaveOccurred())
