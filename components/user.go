@@ -54,7 +54,7 @@ func (comp *userComponent) Reconcile(ctx *cu.Context) (cu.Result, error) {
 
 	// Get the core data for the user from the object/context.
 	username := obj.Spec.Username
-	if username == "" {
+	if username == "" { // TODO Switch this to a defaulting webhook.
 		username = obj.Name
 	}
 	password, ok := ctx.Data.GetString("password")
@@ -110,10 +110,10 @@ func (comp *userComponent) Reconcile(ctx *cu.Context) (cu.Result, error) {
 		// Create an event.
 		var event, eventMessage string
 		if createUser {
-			event = "Created"
+			event = "UserCreated"
 			eventMessage = "RabbitMQ user %s created"
 		} else {
-			event = "Updated"
+			event = "UserUpdated"
 			eventMessage = "RabbitMQ user %s updated"
 		}
 		ctx.Events.Eventf(obj, "Normal", event, eventMessage, username)
@@ -125,48 +125,6 @@ func (comp *userComponent) Reconcile(ctx *cu.Context) (cu.Result, error) {
 		}
 
 	}
-
-	// //Policies
-	// // Get all Permissions for a vhost, user. Add all mentioned in spec and Remove unwanted
-	// permissions, err := rmqc.ListPermissionsOf(username)
-	// if err != nil {
-	// 	return cu.Result{}, errors.Wrapf(err, "error listing permissions for user %s", username)
-	// }
-	// permMap := map[string]*rabbithole.PermissionInfo{}
-	// for _, perm := range permissions {
-	// 	permMap[perm.Vhost] = &perm
-	// }
-
-	// for _, perm := range obj.Spec.Permissions {
-	// 	existingPerm, ok := permMap[perm.Vhost]
-
-	// 	_, err := rmqc.UpdatePermissionsIn(perm.Vhost, username, rabbithole.Permissions{
-	// 		Configure: perm.Configure,
-	// 		Read:      perm.Read,
-	// 		Write:     perm.Write,
-	// 	})
-	// 	if err != nil {
-	// 		return cu.Result{}, errors.Wrapf(err, "error updating permissions for user %s and vhost %s", username, obj.Spec.Permissions[key].Vhost)
-	// 	}
-	// 	// Removes entries from the list of all permission that got updated
-	// 	for k := range permInfo {
-	// 		if permInfo[k].Vhost == obj.Spec.Permissions[key].Vhost {
-	// 			// Remove key from permInfo
-	// 			permInfo[k] = permInfo[len(permInfo)-1]
-	// 			permInfo = permInfo[:len(permInfo)-1]
-	// 			break
-	// 		}
-	// 	}
-	// }
-	// //Remove unwanted permissions
-	// for k := range permInfo {
-	// 	// 204 response code when permission is removed
-	// 	_, err := rmqc.ClearPermissionsIn(permInfo[k].Vhost, permInfo[k].User)
-	// 	if err != nil {
-	// 		return cu.Result{}, errors.Wrapf(err, "error removing permissions for user %s and vhost %s", permInfo[k].User, permInfo[k].Vhost)
-	// 	}
-
-	// }
 
 	// Good to go.
 	return cu.Result{}, nil

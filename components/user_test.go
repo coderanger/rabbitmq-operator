@@ -19,13 +19,13 @@ package components
 import (
 	"fmt"
 
+	cu "github.com/coderanger/controller-utils"
 	rabbithole "github.com/michaelklishin/rabbit-hole"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gstruct"
 	"github.com/onsi/gomega/types"
 
-	"github.com/coderanger/controller-utils/tests"
 	rabbitv1beta1 "github.com/coderanger/rabbitmq-operator/api/v1beta1"
 )
 
@@ -60,7 +60,7 @@ func (matcher *matchRabbitPasswordMatcher) NegatedFailureMessage(actual interfac
 var _ = Describe("User component", func() {
 	var obj *rabbitv1beta1.RabbitUser
 	var rabbit *fakeRabbitClient
-	var helper *tests.UnitHelper
+	var helper *cu.UnitHelper
 
 	BeforeEach(func() {
 		rabbit = newFakeRabbitClient()
@@ -84,12 +84,12 @@ var _ = Describe("User component", func() {
 			"Name": Equal("testing"),
 			"Tags": Equal(""),
 		}))))
-		Expect(helper.Events).To(Receive(Equal("Normal Created RabbitMQ user testing created")))
+		Expect(helper.Events).To(Receive(Equal("Normal UserCreated RabbitMQ user testing created")))
 	})
 
 	It("creates a user only once", func() {
 		helper.MustReconcile()
-		Expect(helper.Events).To(Receive(Equal("Normal Created RabbitMQ user testing created")))
+		Expect(helper.Events).To(Receive(Equal("Normal UserCreated RabbitMQ user testing created")))
 		helper.MustReconcile()
 		Expect(helper.Events).ToNot(Receive())
 	})
@@ -101,7 +101,7 @@ var _ = Describe("User component", func() {
 			"Name": Equal("other"),
 			"Tags": Equal(""),
 		}))))
-		Expect(helper.Events).To(Receive(Equal("Normal Created RabbitMQ user other created")))
+		Expect(helper.Events).To(Receive(Equal("Normal UserCreated RabbitMQ user other created")))
 	})
 
 	It("applies the Tags field", func() {
@@ -111,7 +111,7 @@ var _ = Describe("User component", func() {
 			"Name": Equal("testing"),
 			"Tags": Equal("administrator"),
 		}))))
-		Expect(helper.Events).To(Receive(Equal("Normal Created RabbitMQ user testing created")))
+		Expect(helper.Events).To(Receive(Equal("Normal UserCreated RabbitMQ user testing created")))
 	})
 
 	It("applies the password value", func() {
@@ -122,7 +122,7 @@ var _ = Describe("User component", func() {
 			"PasswordHash":     MatchRabbitPassword("extrasecret"),
 			"HashingAlgorithm": Equal(rabbithole.HashingAlgorithmSHA256),
 		}))))
-		Expect(helper.Events).To(Receive(Equal("Normal Created RabbitMQ user testing created")))
+		Expect(helper.Events).To(Receive(Equal("Normal UserCreated RabbitMQ user testing created")))
 	})
 
 	It("does not update an existing user with nothing to change", func() {
@@ -151,7 +151,7 @@ var _ = Describe("User component", func() {
 			"PasswordHash":     MatchRabbitPassword("supersecret"),
 			"HashingAlgorithm": Equal(rabbithole.HashingAlgorithmSHA256),
 		}))))
-		Expect(helper.Events).To(Receive(Equal("Normal Updated RabbitMQ user testing updated")))
+		Expect(helper.Events).To(Receive(Equal("Normal UserUpdated RabbitMQ user testing updated")))
 	})
 
 	It("updates an existing user with the wrong tags", func() {
@@ -169,7 +169,7 @@ var _ = Describe("User component", func() {
 			"Name": Equal("testing"),
 			"Tags": Equal("monitoring"),
 		}))))
-		Expect(helper.Events).To(Receive(Equal("Normal Updated RabbitMQ user testing updated")))
+		Expect(helper.Events).To(Receive(Equal("Normal UserUpdated RabbitMQ user testing updated")))
 	})
 })
 

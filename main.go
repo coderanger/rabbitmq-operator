@@ -19,6 +19,8 @@ package main
 import (
 	"flag"
 	"os"
+	"reflect"
+	goruntime "runtime"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
@@ -66,17 +68,18 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = controllers.RabbitUserController(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "RabbitUser")
-		os.Exit(1)
+	controllers := []func(ctrl.Manager) error{
+		controllers.RabbitUser,
+		controllers.RabbitVhost,
 	}
-	if err = (&controllers.RabbitVhostReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("RabbitVhost"),
-		Scheme: mgr.GetScheme(),
-	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "RabbitVhost")
-		os.Exit(1)
+
+	for _, controller := range controllers {
+		err = controller(mgr)
+		if err != nil {
+			name := goruntime.FuncForPC(reflect.ValueOf(controller).Pointer()).Name()
+			setupLog.Error(err, "unable to create controller", "controller", name)
+			os.Exit(1)
+		}
 	}
 	// +kubebuilder:scaffold:builder
 

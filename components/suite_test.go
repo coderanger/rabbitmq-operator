@@ -19,7 +19,7 @@ package components
 import (
 	"testing"
 
-	"github.com/coderanger/controller-utils/tests"
+	cu "github.com/coderanger/controller-utils"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"sigs.k8s.io/controller-runtime/pkg/envtest/printer"
@@ -29,7 +29,7 @@ import (
 	rabbitv1beta1 "github.com/coderanger/rabbitmq-operator/api/v1beta1"
 )
 
-var suiteHelper *tests.UnitSuiteHelper
+var suiteHelper *cu.UnitSuiteHelper
 
 func TestControllers(t *testing.T) {
 	RegisterFailHandler(Fail)
@@ -42,7 +42,7 @@ func TestControllers(t *testing.T) {
 var _ = BeforeSuite(func() {
 	logf.SetLogger(zap.LoggerTo(GinkgoWriter, true))
 
-	suiteHelper = tests.Unit().
+	suiteHelper = cu.Unit().
 		API(rabbitv1beta1.AddToScheme).
 		MustBuild()
 })

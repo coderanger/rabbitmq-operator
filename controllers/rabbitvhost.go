@@ -17,17 +17,17 @@ limitations under the License.
 package controllers
 
 import (
+	cu "github.com/coderanger/controller-utils"
 	ctrl "sigs.k8s.io/controller-runtime"
 
-	"github.com/coderanger/controller-utils/components"
 	rabbitmqv1beta1 "github.com/coderanger/rabbitmq-operator/api/v1beta1"
 )
 
-// +kubebuilder:rbac:groups=rabbitmq.coderanger.net,resources=rabbitusers,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=rabbitmq.coderanger.net,resources=rabbitusers/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=rabbitmq.coderanger.net,resources=rabbitvhosts,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=rabbitmq.coderanger.net,resources=rabbitvhosts/status,verbs=get;update;patch
 
-func RabbitUserController(mgr ctrl.Manager) error {
-	return components.NewReconciler(mgr).
-		For(&rabbitmqv1beta1.RabbitUser{}).
+func RabbitVhost(mgr ctrl.Manager) error {
+	return cu.NewReconciler(mgr).
+		For(&rabbitmqv1beta1.RabbitVhost{}).
 		Complete()
 }

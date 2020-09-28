@@ -24,18 +24,20 @@ import (
 )
 
 type fakeRabbitClient struct {
-	Users       []*rabbithole.UserInfo
-	Vhosts      []*rabbithole.VhostInfo
-	Policies    map[string]map[string]*rabbithole.Policy
-	Permissions map[string][]*rabbithole.PermissionInfo
+	Users  []*rabbithole.UserInfo
+	Vhosts []*rabbithole.VhostInfo
+	// [vhost][policyName]
+	Policies map[string]map[string]*rabbithole.Policy
+	// [username][vhost]
+	Permissions map[string]map[string]*rabbithole.PermissionInfo
 }
 
 func newFakeRabbitClient() *fakeRabbitClient {
 	return &fakeRabbitClient{
 		Users:       []*rabbithole.UserInfo{},
 		Vhosts:      []*rabbithole.VhostInfo{},
-		Policies:    make(map[string]map[string]*rabbithole.Policy),
-		Permissions: make(map[string][]*rabbithole.PermissionInfo),
+		Policies:    map[string]map[string]*rabbithole.Policy{},
+		Permissions: map[string]map[string]*rabbithole.PermissionInfo{},
 	}
 }
 
@@ -140,32 +142,38 @@ func (frc *fakeRabbitClient) ListPermissionsOf(username string) (rec []rabbithol
 	}
 	return perms, nil
 }
+
 func (frc *fakeRabbitClient) UpdatePermissionsIn(vhost, username string, permissions rabbithole.Permissions) (res *http.Response, err error) {
-	for key := range frc.Permissions[username] {
-		//Update
-		if frc.Permissions[username][key].Vhost == vhost {
-			frc.Permissions[username][key].Configure = permissions.Configure
-			frc.Permissions[username][key].Read = permissions.Read
-			frc.Permissions[username][key].Write = permissions.Write
-			return &http.Response{StatusCode: 204}, nil
-		}
+	userPerms, ok := frc.Permissions[username]
+	if !ok {
+		userPerms = map[string]*rabbithole.PermissionInfo{}
+		frc.Permissions[username] = userPerms
 	}
-	//Create
-	frc.Permissions[username] = append(frc.Permissions[username], &rabbithole.PermissionInfo{
-		Vhost:     vhost,
-		User:      username,
-		Configure: permissions.Configure,
-		Read:      permissions.Read,
-		Write:     permissions.Write,
-	})
-	return &http.Response{StatusCode: 201}, nil
+
+	perm, ok := userPerms[vhost]
+	if !ok {
+		userPerms[vhost] = &rabbithole.PermissionInfo{
+			Vhost:     vhost,
+			User:      username,
+			Configure: permissions.Configure,
+			Read:      permissions.Read,
+			Write:     permissions.Write,
+		}
+		return &http.Response{StatusCode: 201}, nil
+	}
+
+	perm.Read = permissions.Read
+	perm.Write = permissions.Write
+	perm.Configure = permissions.Configure
+	return &http.Response{StatusCode: 204}, nil
 }
+
 func (frc *fakeRabbitClient) ClearPermissionsIn(vhost, username string) (res *http.Response, err error) {
-	for key := range frc.Permissions[username] {
-		if frc.Permissions[username][key].Vhost == vhost {
-			frc.Permissions[username][key] = frc.Permissions[username][len(frc.Permissions[username])-1]
-			frc.Permissions[username] = frc.Permissions[username][:len(frc.Permissions[username])-1]
-			return &http.Response{StatusCode: 204}, nil
+	userPerms, ok := frc.Permissions[username]
+	if ok {
+		delete(userPerms, vhost)
+		if len(userPerms) == 0 {
+			delete(frc.Permissions, username)
 		}
 	}
 	return &http.Response{StatusCode: 204}, nil
