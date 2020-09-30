@@ -52,7 +52,7 @@ var _ = Describe("RabbitUser controller", func() {
 		c.Create(user)
 
 		secret := &corev1.Secret{}
-		c.EventuallyGetName("testing-password", secret)
+		c.EventuallyGetName("testing-rabbituser-password", secret)
 
 		rmqcUser := connectUser("testing", string(secret.Data["password"]))
 		Eventually(rmqcUser.Whoami).ShouldNot(BeNil())
@@ -78,7 +78,7 @@ var _ = Describe("RabbitUser controller", func() {
 		c.Create(user)
 
 		secret := &corev1.Secret{}
-		c.EventuallyGetName("testing-password", secret)
+		c.EventuallyGetName("testing-rabbituser-password", secret)
 
 		rmqcUser := connectUser("testing", string(secret.Data["password"]))
 		Eventually(rmqcUser.Whoami).ShouldNot(BeNil())

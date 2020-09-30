@@ -35,6 +35,7 @@ func Permissions() *permissionsComponent {
 
 func (comp *permissionsComponent) Reconcile(ctx *cu.Context) (cu.Result, error) {
 	obj := ctx.Object.(*rabbitv1beta1.RabbitUser)
+	ctx.Conditions.SetUnknown("PermissionsReady", "Unknown")
 
 	// Connect to the RabbitMQ server.
 	rmqc, err := connect(ctx, &obj.Spec.Connection, obj.Namespace, ctx.Client, comp.clientFactory)
@@ -104,5 +105,6 @@ func (comp *permissionsComponent) Reconcile(ctx *cu.Context) (cu.Result, error) 
 
 	}
 
+	ctx.Conditions.SetTrue("PermissionsReady", "PermissionsSynced")
 	return cu.Result{}, nil
 }

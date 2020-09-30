@@ -37,6 +37,7 @@ import (
 
 type rabbitManager interface {
 	ListVhosts() ([]rabbithole.VhostInfo, error)
+	GetVhost(string) (*rabbithole.VhostInfo, error)
 	PutVhost(string, rabbithole.VhostSettings) (*http.Response, error)
 	ListUsers() ([]rabbithole.UserInfo, error)
 	GetUser(string) (*rabbithole.UserInfo, error)

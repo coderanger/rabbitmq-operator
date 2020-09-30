@@ -20,6 +20,7 @@ import (
 	"fmt"
 
 	cu "github.com/coderanger/controller-utils"
+	. "github.com/coderanger/controller-utils/tests/matchers"
 	rabbithole "github.com/michaelklishin/rabbit-hole"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -85,13 +86,16 @@ var _ = Describe("User component", func() {
 			"Tags": Equal(""),
 		}))))
 		Expect(helper.Events).To(Receive(Equal("Normal UserCreated RabbitMQ user testing created")))
+		Expect(obj).To(HaveCondition("UserReady").WithStatus("False").WithReason("UserPending"))
 	})
 
 	It("creates a user only once", func() {
 		helper.MustReconcile()
 		Expect(helper.Events).To(Receive(Equal("Normal UserCreated RabbitMQ user testing created")))
+		Expect(obj).To(HaveCondition("UserReady").WithStatus("False").WithReason("UserPending"))
 		helper.MustReconcile()
 		Expect(helper.Events).ToNot(Receive())
+		Expect(obj).To(HaveCondition("UserReady").WithStatus("True").WithReason("UserExists"))
 	})
 
 	It("applies the Username field", func() {

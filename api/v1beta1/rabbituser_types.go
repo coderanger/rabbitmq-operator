@@ -19,6 +19,8 @@ package v1beta1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	"github.com/coderanger/controller-utils/conditions"
 )
 
 // RabbitmqPermission defines a single user permissions entry.
@@ -44,6 +46,13 @@ type RabbitUserSpec struct {
 
 // RabbitUserStatus defines the observed state of RabbitUser
 type RabbitUserStatus struct {
+	// Represents the observations of a RabbitUsers's current state.
+	// Known .status.conditions.type are: Ready, UserReady, PermissionsReady
+	// +patchMergeKey=type
+	// +patchStrategy=merge
+	// +listType=map
+	// +listMapKey=type
+	Conditions []conditions.Condition `json:"conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type" protobuf:"bytes,1,rep,name=conditions"`
 }
 
 // +kubebuilder:object:root=true
@@ -68,4 +77,9 @@ type RabbitUserList struct {
 
 func init() {
 	SchemeBuilder.Register(&RabbitUser{}, &RabbitUserList{})
+}
+
+// TODO code generator for this.
+func (o *RabbitUser) GetConditions() *[]conditions.Condition {
+	return &o.Status.Conditions
 }

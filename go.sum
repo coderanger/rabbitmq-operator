@@ -53,6 +53,7 @@ github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDk
 github.com/cockroachdb/datadriven v0.0.0-20190809214429-80d97fb3cbaa/go.mod h1:zn76sxSg3SzpJ0PPJaLDCu+Bu0Lg3sKTORVIj19EIF8=
 github.com/coderanger/controller-utils v0.0.0-20200925022637-d66f965e832d h1:ocmt1Z3IPPM8Xlp1jor8g3t25by89KNXb9KPMsYy2LI=
 github.com/coderanger/controller-utils v0.0.0-20200925022637-d66f965e832d/go.mod h1:rJ1UNTs5sBtIb8hBTEMegb8kwC7+zeXVxQ+7qexRSYE=
+github.com/coderanger/rabbitmq-operator v0.0.0-20200926104232-337a9c6d71e1/go.mod h1:e6kFBerpoiCiIFq2z7Ikab9xjwrwBBmXNjvUd5FeCbk=
 github.com/containerd/console v1.0.0/go.mod h1:8Pf4gM6VEbTNRIT26AyyU7hxdQU3MvAvxVI0sc00XBE=
 github.com/containerd/containerd v1.3.3/go.mod h1:bC6axHOhabU15QhwfG7w5PipXdVtMXFTttgp+kVtyUA=
 github.com/containerd/ttrpc v1.0.0/go.mod h1:PvCDdDGpgqzQIzDW1TphrGLssLDZp2GuS+X5DkEJB8o=

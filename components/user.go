@@ -45,6 +45,7 @@ func User() *userComponent {
 
 func (comp *userComponent) Reconcile(ctx *cu.Context) (cu.Result, error) {
 	obj := ctx.Object.(*rabbitv1beta1.RabbitUser)
+	ctx.Conditions.SetUnknown("UserReady", "Unknown")
 
 	// Connect to the RabbitMQ server.
 	rmqc, err := connect(ctx, &obj.Spec.Connection, obj.Namespace, ctx.Client, comp.clientFactory)
@@ -111,22 +112,23 @@ func (comp *userComponent) Reconcile(ctx *cu.Context) (cu.Result, error) {
 		var event, eventMessage string
 		if createUser {
 			event = "UserCreated"
-			eventMessage = "RabbitMQ user %s created"
+			eventMessage = "created"
 		} else {
 			event = "UserUpdated"
-			eventMessage = "RabbitMQ user %s updated"
+			eventMessage = "updated"
 		}
-		ctx.Events.Eventf(obj, "Normal", event, eventMessage, username)
+		ctx.Events.Eventf(obj, "Normal", event, "RabbitMQ user %s %s", username, eventMessage)
 
 		if resp.StatusCode == 201 {
 			// If this is the initial creation of the user reconcile again after 10 seconds
 			// This is a hack to remedy amqp permissions being applied incorrectly immediately after creation.
+			ctx.Conditions.SetfFalse("UserReady", "UserPending", "RabbitMQ user %s has been created", username)
 			return cu.Result{RequeueAfter: time.Second * 10, SkipRemaining: true}, nil
 		}
-
 	}
 
 	// Good to go.
+	ctx.Conditions.SetfTrue("UserReady", "UserExists", "RabbitMQ user %s exists", username)
 	return cu.Result{}, nil
 }
 

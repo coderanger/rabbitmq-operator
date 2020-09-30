@@ -32,6 +32,8 @@ type fakeRabbitClient struct {
 	Permissions map[string]map[string]*rabbithole.PermissionInfo
 }
 
+var _ rabbitManager = &fakeRabbitClient{}
+
 func newFakeRabbitClient() *fakeRabbitClient {
 	return &fakeRabbitClient{
 		Users:       []*rabbithole.UserInfo{},
@@ -81,6 +83,15 @@ func (frc *fakeRabbitClient) ListVhosts() ([]rabbithole.VhostInfo, error) {
 		vhosts = append(vhosts, *vhost)
 	}
 	return vhosts, nil
+}
+
+func (frc *fakeRabbitClient) GetVhost(name string) (*rabbithole.VhostInfo, error) {
+	for _, vhost := range frc.Vhosts {
+		if vhost.Name == name {
+			return vhost, nil
+		}
+	}
+	return nil, rabbithole.ErrorResponse{StatusCode: 404}
 }
 
 func (frc *fakeRabbitClient) PutVhost(vhost string, _settings rabbithole.VhostSettings) (*http.Response, error) {

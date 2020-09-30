@@ -18,6 +18,7 @@ package components
 
 import (
 	cu "github.com/coderanger/controller-utils"
+	. "github.com/coderanger/controller-utils/tests/matchers"
 	rabbithole "github.com/michaelklishin/rabbit-hole"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -66,6 +67,7 @@ var _ = Describe("Permissions component", func() {
 			}),
 		}))
 		Expect(helper.Events).To(Receive(Equal("Normal PermissionsCreated RabbitMQ permissions for user testing in vhost / created")))
+		Expect(obj).To(HaveCondition("PermissionsReady").WithStatus("True"))
 	})
 
 	It("updates a permission when Read does not match", func() {

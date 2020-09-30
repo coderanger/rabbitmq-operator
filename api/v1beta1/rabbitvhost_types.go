@@ -19,6 +19,9 @@ package v1beta1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+
+	"github.com/coderanger/controller-utils/conditions"
 )
 
 type RabbitPolicy struct {
@@ -31,7 +34,7 @@ type RabbitPolicy struct {
 	Priority int `json:"priority,omitempty"`
 	// Additional arguments added to the entities (queues,
 	// exchanges or both) that match a policy
-	Definition string `json:"definition"`
+	Definition map[string]runtime.RawExtension `json:"definition"`
 }
 
 // RabbitVhostSpec defines the desired state of RabbitVhost
@@ -44,6 +47,13 @@ type RabbitVhostSpec struct {
 
 // RabbitVhostStatus defines the observed state of RabbitVhost
 type RabbitVhostStatus struct {
+	// Represents the observations of a RabbitUsers's current state.
+	// Known .status.conditions.type are: Ready, VhostReady, PoliciesReady, UserReady
+	// +patchMergeKey=type
+	// +patchStrategy=merge
+	// +listType=map
+	// +listMapKey=type
+	Conditions []conditions.Condition `json:"conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type" protobuf:"bytes,1,rep,name=conditions"`
 }
 
 // +kubebuilder:object:root=true
@@ -68,4 +78,9 @@ type RabbitVhostList struct {
 
 func init() {
 	SchemeBuilder.Register(&RabbitVhost{}, &RabbitVhostList{})
+}
+
+// TODO code generator for this.
+func (o *RabbitVhost) GetConditions() *[]conditions.Condition {
+	return &o.Status.Conditions
 }
