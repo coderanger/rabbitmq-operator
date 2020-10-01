@@ -55,7 +55,7 @@ func (comp *userComponent) Reconcile(ctx *cu.Context) (cu.Result, error) {
 
 	// Get the core data for the user from the object/context.
 	username := obj.Spec.Username
-	password, ok := ctx.Data.GetString("password")
+	password, ok := ctx.Data.GetString("RABBIT_PASSWORD")
 	if !ok {
 		return cu.Result{}, errors.Wrap(err, "user password not set in context")
 	}

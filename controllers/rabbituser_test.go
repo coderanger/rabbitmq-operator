@@ -56,7 +56,7 @@ var _ = Describe("RabbitUser controller", func() {
 
 		secret := &corev1.Secret{}
 		c.GetName("testing-rabbituser", secret)
-		rmqcUser := connectUser(user.Spec.Username, string(secret.Data["password"]))
+		rmqcUser := connectUser(user.Spec.Username, string(secret.Data["RABBIT_PASSWORD"]))
 		Expect(rmqcUser.Whoami()).ToNot(BeNil())
 
 		// No permissions, so shouldn't be able to see anything.
@@ -88,7 +88,7 @@ var _ = Describe("RabbitUser controller", func() {
 
 		secret := &corev1.Secret{}
 		c.GetName("testing-rabbituser", secret)
-		rmqcUser := connectUser(user.Spec.Username, string(secret.Data["password"]))
+		rmqcUser := connectUser(user.Spec.Username, string(secret.Data["RABBIT_PASSWORD"]))
 		Expect(rmqcUser.Whoami()).ToNot(BeNil())
 
 		vhosts, err := rmqcUser.ListVhosts()

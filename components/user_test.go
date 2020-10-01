@@ -76,7 +76,7 @@ var _ = Describe("User component", func() {
 			},
 		}
 		helper = suiteHelper.Setup(comp, obj)
-		helper.Ctx.Data["password"] = "supersecret"
+		helper.Ctx.Data["RABBIT_PASSWORD"] = "supersecret"
 	})
 
 	It("creates a user", func() {
@@ -119,7 +119,7 @@ var _ = Describe("User component", func() {
 	})
 
 	It("applies the password value", func() {
-		helper.Ctx.Data["password"] = "extrasecret"
+		helper.Ctx.Data["RABBIT_PASSWORD"] = "extrasecret"
 		helper.MustReconcile()
 		Expect(rabbit.Users).To(ConsistOf(PointTo(MatchFields(IgnoreExtras, Fields{
 			"Name":             Equal("testing"),
