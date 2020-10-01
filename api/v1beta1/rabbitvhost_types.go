@@ -57,6 +57,7 @@ type RabbitVhostStatus struct {
 }
 
 // +kubebuilder:object:root=true
+// +kubebuilder:subresource:status
 
 // RabbitVhost is the Schema for the rabbitvhosts API
 type RabbitVhost struct {

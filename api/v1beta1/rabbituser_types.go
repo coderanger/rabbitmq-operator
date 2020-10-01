@@ -56,6 +56,7 @@ type RabbitUserStatus struct {
 }
 
 // +kubebuilder:object:root=true
+// +kubebuilder:subresource:status
 
 // RabbitUser is the Schema for the rabbitusers API
 type RabbitUser struct {
