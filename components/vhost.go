@@ -45,9 +45,6 @@ func (comp *vhostComponent) Reconcile(ctx *cu.Context) (cu.Result, error) {
 
 	// Get the core data for the vhost from the object/context.
 	vhost := obj.Spec.VhostName
-	if vhost == "" { // TODO Switch this to a defaulting webhook.
-		vhost = obj.Name
-	}
 
 	// Check if the vhost already exists. There is nothing to update since there's no secondary values (for now, maybe tracing later).
 	var createVhost bool

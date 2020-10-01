@@ -18,6 +18,7 @@ package controllers
 
 import (
 	cu "github.com/coderanger/controller-utils"
+	"github.com/coderanger/controller-utils/randstring"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
@@ -46,16 +47,22 @@ var _ = Describe("RabbitUser controller", func() {
 		user := &rabbitv1beta1.RabbitUser{
 			ObjectMeta: metav1.ObjectMeta{Name: "testing"},
 			Spec: rabbitv1beta1.RabbitUserSpec{
-				Tags: "management",
+				Username: "testing-" + randstring.MustRandomString(5),
+				Tags:     "management",
 			},
 		}
 		c.Create(user)
+		c.EventuallyGetName("testing", user, c.EventuallyReady())
 
 		secret := &corev1.Secret{}
-		c.EventuallyGetName("testing-rabbituser-password", secret)
+		c.GetName("testing-rabbituser-password", secret)
+		rmqcUser := connectUser(user.Spec.Username, string(secret.Data["password"]))
+		Expect(rmqcUser.Whoami()).ToNot(BeNil())
 
-		rmqcUser := connectUser("testing", string(secret.Data["password"]))
-		Eventually(rmqcUser.Whoami).ShouldNot(BeNil())
+		// No permissions, so shouldn't be able to see anything.
+		vhosts, err := rmqcUser.ListVhosts()
+		Expect(err).ToNot(HaveOccurred())
+		Expect(vhosts).To(BeEmpty())
 	})
 
 	It("sets vhost permissions", func() {
@@ -64,7 +71,8 @@ var _ = Describe("RabbitUser controller", func() {
 		user := &rabbitv1beta1.RabbitUser{
 			ObjectMeta: metav1.ObjectMeta{Name: "testing"},
 			Spec: rabbitv1beta1.RabbitUserSpec{
-				Tags: "administrator",
+				Username: "testing-" + randstring.MustRandomString(5),
+				Tags:     "administrator",
 				Permissions: []rabbitv1beta1.RabbitPermission{
 					{
 						Vhost:     "/",
@@ -76,12 +84,12 @@ var _ = Describe("RabbitUser controller", func() {
 			},
 		}
 		c.Create(user)
+		c.EventuallyGetName("testing", user, c.EventuallyReady())
 
 		secret := &corev1.Secret{}
-		c.EventuallyGetName("testing-rabbituser-password", secret)
-
-		rmqcUser := connectUser("testing", string(secret.Data["password"]))
-		Eventually(rmqcUser.Whoami).ShouldNot(BeNil())
+		c.GetName("testing-rabbituser-password", secret)
+		rmqcUser := connectUser(user.Spec.Username, string(secret.Data["password"]))
+		Expect(rmqcUser.Whoami()).ToNot(BeNil())
 
 		vhosts, err := rmqcUser.ListVhosts()
 		Expect(err).ToNot(HaveOccurred())

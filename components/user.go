@@ -55,9 +55,6 @@ func (comp *userComponent) Reconcile(ctx *cu.Context) (cu.Result, error) {
 
 	// Get the core data for the user from the object/context.
 	username := obj.Spec.Username
-	if username == "" { // TODO Switch this to a defaulting webhook.
-		username = obj.Name
-	}
 	password, ok := ctx.Data.GetString("password")
 	if !ok {
 		return cu.Result{}, errors.Wrap(err, "user password not set in context")

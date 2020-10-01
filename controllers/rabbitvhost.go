@@ -21,6 +21,8 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	rabbitmqv1beta1 "github.com/coderanger/rabbitmq-operator/api/v1beta1"
+	"github.com/coderanger/rabbitmq-operator/components"
+	"github.com/coderanger/rabbitmq-operator/templates"
 )
 
 // +kubebuilder:rbac:groups=rabbitmq.coderanger.net,resources=rabbitvhosts,verbs=get;list;watch;create;update;patch;delete
@@ -29,5 +31,11 @@ import (
 func RabbitVhost(mgr ctrl.Manager) error {
 	return cu.NewReconciler(mgr).
 		For(&rabbitmqv1beta1.RabbitVhost{}).
+		Templates(templates.Templates).
+		Component("vhost", components.Vhost()).
+		Component("policies", components.Policies()).
+		TemplateComponent("vhost_user.yml", "UserReady").
+		ReadyStatusComponent("VhostReady", "PoliciesReady", "UserReady").
+		Webhook().
 		Complete()
 }

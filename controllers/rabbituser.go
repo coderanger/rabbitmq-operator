@@ -30,8 +30,10 @@ import (
 func RabbitUser(mgr ctrl.Manager) error {
 	return cu.NewReconciler(mgr).
 		For(&rabbitmqv1beta1.RabbitUser{}).
-		RandomSecretComponent("password").
+		RandomSecretComponent().
 		Component("user", components.User()).
 		Component("permissions", components.Permissions()).
+		ReadyStatusComponent("UserReady", "PermissionsReady").
+		Webhook().
 		Complete()
 }
