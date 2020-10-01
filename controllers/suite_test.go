@@ -21,7 +21,6 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"path/filepath"
 	"testing"
 
 	cu "github.com/coderanger/controller-utils"
@@ -51,7 +50,6 @@ var _ = BeforeSuite(func(done Done) {
 
 	By("bootstrapping test environment")
 	suiteHelper = cu.Functional().
-		CRDPath(filepath.Join("..", "config", "crd", "bases")).
 		API(rabbitmqv1beta1.AddToScheme).
 		MustBuild()
 
