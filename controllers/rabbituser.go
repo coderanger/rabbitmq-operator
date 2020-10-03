@@ -22,6 +22,7 @@ import (
 
 	rabbitmqv1beta1 "github.com/coderanger/rabbitmq-operator/api/v1beta1"
 	"github.com/coderanger/rabbitmq-operator/components"
+	"github.com/coderanger/rabbitmq-operator/templates"
 )
 
 // +kubebuilder:rbac:groups=rabbitmq.coderanger.net,resources=rabbitusers,verbs=get;list;watch;create;update;patch;delete
@@ -30,9 +31,11 @@ import (
 func RabbitUser(mgr ctrl.Manager) error {
 	return cu.NewReconciler(mgr).
 		For(&rabbitmqv1beta1.RabbitUser{}).
+		Templates(templates.Templates).
 		RandomSecretComponent("RABBIT_PASSWORD").
 		Component("user", components.User()).
 		Component("permissions", components.Permissions()).
+		TemplateComponent("user_secret.yml", "").
 		ReadyStatusComponent("UserReady", "PermissionsReady").
 		Webhook().
 		Complete()

@@ -58,10 +58,10 @@ func rabbitholeClientFactory(uri string, user string, pass string, t *http.Trans
 }
 
 // Open a connection to the RabbitMQ server as defined by a RabbitmqConnection object.
-func connect(ctx context.Context, connection *rabbitv1beta1.RabbitConnection, namespace string, client client.Client, clientFactory rabbitClientFactory) (rabbitManager, error) {
+func connect(ctx context.Context, connection *rabbitv1beta1.RabbitConnection, namespace string, client client.Client, clientFactory rabbitClientFactory) (rabbitManager, *url.URL, error) {
 	defaults, err := url.Parse(os.Getenv("DEFAULT_CONNECTION"))
 	if err != nil {
-		return nil, errors.Wrap(err, "unable to parse $DEFAULT_CONNECTION")
+		return nil, nil, errors.Wrap(err, "unable to parse $DEFAULT_CONNECTION")
 	}
 
 	protocol := connection.Protocol
@@ -77,7 +77,7 @@ func connect(ctx context.Context, connection *rabbitv1beta1.RabbitConnection, na
 		host = defaults.Hostname()
 	}
 	if host == "" {
-		return nil, errors.New("host is required")
+		return nil, nil, errors.New("host is required")
 	}
 
 	port := connection.Port
@@ -91,7 +91,7 @@ func connect(ctx context.Context, connection *rabbitv1beta1.RabbitConnection, na
 		user = defaults.User.Username()
 	}
 	if user == "" {
-		return nil, errors.New("username is required")
+		return nil, nil, errors.New("username is required")
 	}
 
 	var password string
@@ -99,7 +99,7 @@ func connect(ctx context.Context, connection *rabbitv1beta1.RabbitConnection, na
 		secret := &corev1.Secret{}
 		err := client.Get(ctx, types.NamespacedName{Name: connection.PasswordSecretRef.Name, Namespace: namespace}, secret)
 		if err != nil {
-			return nil, errors.Wrapf(err, "error getting password secret %s/%s", namespace, connection.PasswordSecretRef.Name)
+			return nil, nil, errors.Wrapf(err, "error getting password secret %s/%s", namespace, connection.PasswordSecretRef.Name)
 		}
 		key := connection.PasswordSecretRef.Key
 		if key == "" {
@@ -107,10 +107,12 @@ func connect(ctx context.Context, connection *rabbitv1beta1.RabbitConnection, na
 		}
 		passwordBytes, ok := secret.Data[key]
 		if !ok {
-			return nil, errors.Errorf("key %s not found in password secret %s/%s", key, namespace, connection.PasswordSecretRef.Name)
+			return nil, nil, errors.Errorf("key %s not found in password secret %s/%s", key, namespace, connection.PasswordSecretRef.Name)
 		}
 		password = string(passwordBytes)
 	} else if defaultPassword, ok := defaults.User.Password(); ok {
+		password = defaultPassword
+	} else if defaultPassword, ok := os.LookupEnv("DEFAULT_CONNECTION_PASSWORD"); ok {
 		password = defaultPassword
 	}
 	// No error for blank password since that is kind of allowed, though a bad idea.
@@ -138,10 +140,11 @@ func connect(ctx context.Context, connection *rabbitv1beta1.RabbitConnection, na
 		hostAndPort = fmt.Sprintf("%s:%d", host, port)
 	}
 
-	hostUri := (&url.URL{Scheme: protocol, Host: hostAndPort}).String()
+	compiledUri := &url.URL{Scheme: protocol, Host: hostAndPort, User: url.UserPassword(user, password)}
 
 	// TODO connection pooling? Would need to persist the Transport object.
 
 	// Connect to the rabbitmq cluster
-	return clientFactory(hostUri, user, password, transport)
+	rmqc, err := clientFactory(compiledUri.String(), user, password, transport)
+	return rmqc, compiledUri, err
 }

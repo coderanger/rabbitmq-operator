@@ -76,6 +76,7 @@ func main() {
 	for _, controller := range controllers {
 		err = controller(mgr)
 		if err != nil {
+			// TODO Don't use relect.
 			name := goruntime.FuncForPC(reflect.ValueOf(controller).Pointer()).Name()
 			setupLog.Error(err, "unable to create controller", "controller", name)
 			os.Exit(1)

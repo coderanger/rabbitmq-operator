@@ -56,6 +56,8 @@ var _ = Describe("RabbitUser controller", func() {
 
 		secret := &corev1.Secret{}
 		c.GetName("testing-rabbituser", secret)
+		Expect(secret.Data).To(HaveKeyWithValue("RABBIT_PASSWORD", Not(BeEmpty())))
+		Expect(secret.Data).To(HaveKeyWithValue("RABBIT_HOST", Not(BeEmpty())))
 		rmqcUser := connectUser(user.Spec.Username, string(secret.Data["RABBIT_PASSWORD"]))
 		Expect(rmqcUser.Whoami()).ToNot(BeNil())
 

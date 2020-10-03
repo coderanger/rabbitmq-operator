@@ -42,7 +42,7 @@ func (comp *policiesComponent) Reconcile(ctx *cu.Context) (cu.Result, error) {
 	ctx.Conditions.SetUnknown("PoliciesReady", "Unknown")
 
 	// Connect to the RabbitMQ server.
-	rmqc, err := connect(ctx, &obj.Spec.Connection, obj.Namespace, ctx.Client, comp.clientFactory)
+	rmqc, _, err := connect(ctx, &obj.Spec.Connection, obj.Namespace, ctx.Client, comp.clientFactory)
 	if err != nil {
 		return cu.Result{}, errors.Wrapf(err, "error connecting to rabbitmq")
 	}

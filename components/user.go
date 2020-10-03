@@ -24,6 +24,7 @@ import (
 	"encoding/base64"
 	"hash"
 	"io/ioutil"
+	"net/url"
 	"time"
 
 	cu "github.com/coderanger/controller-utils"
@@ -48,7 +49,7 @@ func (comp *userComponent) Reconcile(ctx *cu.Context) (cu.Result, error) {
 	ctx.Conditions.SetUnknown("UserReady", "Unknown")
 
 	// Connect to the RabbitMQ server.
-	rmqc, err := connect(ctx, &obj.Spec.Connection, obj.Namespace, ctx.Client, comp.clientFactory)
+	rmqc, uri, err := connect(ctx, &obj.Spec.Connection, obj.Namespace, ctx.Client, comp.clientFactory)
 	if err != nil {
 		return cu.Result{}, errors.Wrapf(err, "error connecting to rabbitmq")
 	}
@@ -123,6 +124,10 @@ func (comp *userComponent) Reconcile(ctx *cu.Context) (cu.Result, error) {
 			return cu.Result{RequeueAfter: time.Second * 10, SkipRemaining: true}, nil
 		}
 	}
+
+	// Stash a URI to be inserted into the Secret in a template component later.
+	uri.User = url.UserPassword(username, password)
+	ctx.Data["uri"] = uri
 
 	// Good to go.
 	ctx.Conditions.SetfTrue("UserReady", "UserExists", "RabbitMQ user %s exists", username)
