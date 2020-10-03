@@ -77,6 +77,17 @@ func (frc *fakeRabbitClient) PutUser(username string, settings rabbithole.UserSe
 	return &http.Response{StatusCode: 201}, nil
 }
 
+func (frc *fakeRabbitClient) DeleteUser(name string) (*http.Response, error) {
+	for i, element := range frc.Users {
+		if element.Name == name {
+			copy(frc.Users[i:], frc.Users[i+1:])
+			frc.Users = frc.Users[:len(frc.Users)-1]
+			return &http.Response{StatusCode: 204}, nil
+		}
+	}
+	return &http.Response{StatusCode: 404}, nil
+}
+
 func (frc *fakeRabbitClient) ListVhosts() ([]rabbithole.VhostInfo, error) {
 	vhosts := []rabbithole.VhostInfo{}
 	for _, vhost := range frc.Vhosts {
@@ -102,6 +113,17 @@ func (frc *fakeRabbitClient) PutVhost(vhost string, _settings rabbithole.VhostSe
 	}
 	frc.Vhosts = append(frc.Vhosts, &rabbithole.VhostInfo{Name: vhost})
 	return &http.Response{StatusCode: 201}, nil
+}
+
+func (frc *fakeRabbitClient) DeleteVhost(vhost string) (*http.Response, error) {
+	for i, element := range frc.Vhosts {
+		if element.Name == vhost {
+			copy(frc.Vhosts[i:], frc.Vhosts[i+1:])
+			frc.Vhosts = frc.Vhosts[:len(frc.Vhosts)-1]
+			return &http.Response{StatusCode: 204}, nil
+		}
+	}
+	return &http.Response{StatusCode: 404}, nil
 }
 
 func (frc *fakeRabbitClient) ListPoliciesIn(vhost string) (rec []rabbithole.Policy, err error) {

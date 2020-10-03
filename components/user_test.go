@@ -175,6 +175,17 @@ var _ = Describe("User component", func() {
 		}))))
 		Expect(helper.Events).To(Receive(Equal("Normal UserUpdated RabbitMQ user testing updated")))
 	})
+
+	It("deletes a user", func() {
+		rabbit.Users = []*rabbithole.UserInfo{
+			{
+				Name: "testing",
+			},
+		}
+		_, done := helper.MustFinalize()
+		Expect(done).To(BeTrue())
+		Expect(rabbit.Users).To(BeEmpty())
+	})
 })
 
 var _ = Describe("hashRabbitPassword", func() {

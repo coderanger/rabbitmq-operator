@@ -134,6 +134,22 @@ func (comp *userComponent) Reconcile(ctx *cu.Context) (cu.Result, error) {
 	return cu.Result{}, nil
 }
 
+func (comp *userComponent) Finalize(ctx *cu.Context) (cu.Result, bool, error) {
+	obj := ctx.Object.(*rabbitv1beta1.RabbitUser)
+
+	// Connect to the RabbitMQ server.
+	rmqc, _, err := connect(ctx, &obj.Spec.Connection, obj.Namespace, ctx.Client, comp.clientFactory)
+	if err != nil {
+		return cu.Result{}, false, errors.Wrapf(err, "error connecting to rabbitmq")
+	}
+
+	_, err = rmqc.DeleteUser(obj.Spec.Username)
+	if err != nil {
+		return cu.Result{}, false, errors.Wrapf(err, "error deleting rabbitmq user %s", obj.Spec.Username)
+	}
+	return cu.Result{}, true, nil
+}
+
 var hashAlgorithms = map[rabbithole.HashingAlgorithm]func() hash.Hash{
 	rabbithole.HashingAlgorithmSHA256: sha256.New,
 	rabbithole.HashingAlgorithmSHA512: sha512.New,

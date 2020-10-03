@@ -17,12 +17,16 @@ limitations under the License.
 package controllers
 
 import (
+	"context"
+
 	cu "github.com/coderanger/controller-utils"
 	"github.com/coderanger/controller-utils/randstring"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
+	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 
 	rabbitv1beta1 "github.com/coderanger/rabbitmq-operator/api/v1beta1"
 )
@@ -53,6 +57,7 @@ var _ = Describe("RabbitUser controller", func() {
 		}
 		c.Create(user)
 		c.EventuallyGetName("testing", user, c.EventuallyReady())
+		Expect(user.Finalizers).To(ContainElement("rabbituser.rabbitmq.coderanger.net/user"))
 
 		secret := &corev1.Secret{}
 		c.GetName("testing-rabbituser", secret)
@@ -65,6 +70,15 @@ var _ = Describe("RabbitUser controller", func() {
 		vhosts, err := rmqcUser.ListVhosts()
 		Expect(err).ToNot(HaveOccurred())
 		Expect(vhosts).To(BeEmpty())
+
+		// Delete the user and make sure it is cleaned up.
+		c.Delete(user)
+		Eventually(func() bool {
+			err := helper.Client.Get(context.Background(), types.NamespacedName{Name: "testing", Namespace: helper.Namespace}, user)
+			return err != nil && kerrors.IsNotFound(err)
+		}).Should(BeTrue())
+		_, err = rmqcUser.Whoami()
+		Expect(err).To(HaveOccurred())
 	})
 
 	It("sets vhost permissions", func() {
