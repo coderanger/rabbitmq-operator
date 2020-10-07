@@ -126,6 +126,13 @@ func (comp *userComponent) Reconcile(ctx *cu.Context) (cu.Result, error) {
 	}
 
 	// Stash a URI to be inserted into the Secret in a template component later.
+	if uri.Scheme == "http" {
+		uri.Scheme = "amqp"
+	} else if uri.Scheme == "https" {
+		uri.Scheme = "amqps"
+	}
+	// Strip off the port so it uses the default AMQP port.
+	uri.Host = uri.Hostname()
 	uri.User = url.UserPassword(username, password)
 	ctx.Data["uri"] = uri
 
