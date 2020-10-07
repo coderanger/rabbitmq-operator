@@ -73,3 +73,19 @@ func (comp *vhostComponent) Reconcile(ctx *cu.Context) (cu.Result, error) {
 	ctx.Conditions.SetfTrue("VhostReady", "VhostExists", "RabbitMQ vhost %s exists", vhost)
 	return cu.Result{}, nil
 }
+
+func (comp *vhostComponent) Finalize(ctx *cu.Context) (cu.Result, bool, error) {
+	obj := ctx.Object.(*rabbitv1beta1.RabbitVhost)
+
+	// Connect to the RabbitMQ server.
+	rmqc, _, err := connect(ctx, &obj.Spec.Connection, obj.Namespace, ctx.Client, comp.clientFactory)
+	if err != nil {
+		return cu.Result{}, false, errors.Wrapf(err, "error connecting to rabbitmq")
+	}
+
+	_, err = rmqc.DeleteVhost(obj.Spec.VhostName)
+	if err != nil {
+		return cu.Result{}, false, errors.Wrapf(err, "error deleting rabbitmq user %s", obj.Spec.VhostName)
+	}
+	return cu.Result{}, true, nil
+}
