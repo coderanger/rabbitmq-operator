@@ -11,6 +11,24 @@ webhooks:
     service:
       name: webhook-service
       namespace: system
+      path: /mutate-rabbitmq-coderanger-net-v1beta1-rabbitqueue
+  failurePolicy: Fail
+  name: mrabbitqueue.kb.io
+  rules:
+  - apiGroups:
+    - rabbitmq.coderanger.net
+    apiVersions:
+    - v1beta1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - rabbitqueues
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: webhook-service
+      namespace: system
       path: /mutate-rabbitmq-coderanger-net-v1beta1-rabbituser
   failurePolicy: Fail
   name: mrabbituser.kb.io

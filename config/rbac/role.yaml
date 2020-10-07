@@ -9,6 +9,26 @@ rules:
 - apiGroups:
   - rabbitmq.coderanger.net
   resources:
+  - rabbitqueues
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - rabbitmq.coderanger.net
+  resources:
+  - rabbitqueues/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - rabbitmq.coderanger.net
+  resources:
   - rabbitusers
   verbs:
   - create

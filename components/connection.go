@@ -50,6 +50,11 @@ type rabbitManager interface {
 	ListPermissionsOf(username string) (rec []rabbithole.PermissionInfo, err error)
 	UpdatePermissionsIn(vhost, username string, permissions rabbithole.Permissions) (res *http.Response, err error)
 	ClearPermissionsIn(vhost, username string) (res *http.Response, err error)
+	ListQueues() ([]rabbithole.QueueInfo, error)
+	ListQueuesIn(string) ([]rabbithole.QueueInfo, error)
+	GetQueue(string, string) (*rabbithole.DetailedQueueInfo, error)
+	DeclareQueue(string, string, rabbithole.QueueSettings) (*http.Response, error)
+	DeleteQueue(string, string) (*http.Response, error)
 }
 
 type rabbitClientFactory func(uri string, user string, pass string, t *http.Transport) (rabbitManager, error)

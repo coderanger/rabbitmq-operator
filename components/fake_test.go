@@ -30,6 +30,8 @@ type fakeRabbitClient struct {
 	Policies map[string]map[string]*rabbithole.Policy
 	// [username][vhost]
 	Permissions map[string]map[string]*rabbithole.PermissionInfo
+	// [vhost][queue]
+	Queues map[string]map[string]*rabbithole.QueueInfo
 }
 
 var _ rabbitManager = &fakeRabbitClient{}
@@ -40,6 +42,7 @@ func newFakeRabbitClient() *fakeRabbitClient {
 		Vhosts:      []*rabbithole.VhostInfo{},
 		Policies:    map[string]map[string]*rabbithole.Policy{},
 		Permissions: map[string]map[string]*rabbithole.PermissionInfo{},
+		Queues:      map[string]map[string]*rabbithole.QueueInfo{},
 	}
 }
 
@@ -149,7 +152,6 @@ func (frc *fakeRabbitClient) PutPolicy(vhost string, name string, policy rabbith
 		return &http.Response{StatusCode: 200}, nil
 	} else {
 		return &http.Response{StatusCode: 201}, nil
-
 	}
 }
 
@@ -209,5 +211,82 @@ func (frc *fakeRabbitClient) ClearPermissionsIn(vhost, username string) (res *ht
 			delete(frc.Permissions, username)
 		}
 	}
+	return &http.Response{StatusCode: 204}, nil
+}
+
+func (frc *fakeRabbitClient) ListQueues() ([]rabbithole.QueueInfo, error) {
+	queues := []rabbithole.QueueInfo{}
+	for _, vhost := range frc.Queues {
+		for _, queue := range vhost {
+			queues = append(queues, *queue)
+		}
+	}
+	return queues, nil
+}
+
+func (frc *fakeRabbitClient) ListQueuesIn(vhost string) ([]rabbithole.QueueInfo, error) {
+	queues := []rabbithole.QueueInfo{}
+	vhostQueues, ok := frc.Queues[vhost]
+	if !ok {
+		// What does this actually return in real life?
+		return queues, rabbithole.ErrorResponse{StatusCode: 404}
+	}
+
+	for _, queue := range vhostQueues {
+		queues = append(queues, *queue)
+	}
+
+	return queues, nil
+}
+
+func (frc *fakeRabbitClient) GetQueue(vhost string, queue string) (*rabbithole.DetailedQueueInfo, error) {
+	vhostQueues, ok := frc.Queues[vhost]
+	if !ok {
+		// What does this actually return in real life?
+		return nil, rabbithole.ErrorResponse{StatusCode: 404}
+	}
+	queueInfo, ok := vhostQueues[queue]
+	if !ok {
+		// What does this actually return in real life?
+		return nil, rabbithole.ErrorResponse{StatusCode: 404}
+	}
+	detailedInfo := &rabbithole.DetailedQueueInfo{
+		Name:       queueInfo.Name,
+		Vhost:      queueInfo.Vhost,
+		Durable:    queueInfo.Durable,
+		AutoDelete: queueInfo.AutoDelete,
+		Arguments:  queueInfo.Arguments,
+	}
+	return detailedInfo, nil
+}
+
+func (frc *fakeRabbitClient) DeclareQueue(vhost, queue string, info rabbithole.QueueSettings) (*http.Response, error) {
+	vhostQueues, ok := frc.Queues[vhost]
+	if !ok {
+		vhostQueues = map[string]*rabbithole.QueueInfo{}
+		frc.Queues[vhost] = vhostQueues
+	}
+	_, ok = vhostQueues[queue]
+	vhostQueues[queue] = &rabbithole.QueueInfo{
+		Name:       queue,
+		Vhost:      vhost,
+		Durable:    info.Durable,
+		AutoDelete: info.AutoDelete,
+		Arguments:  info.Arguments,
+	}
+	if ok {
+		return &http.Response{StatusCode: 200}, nil
+	} else {
+		return &http.Response{StatusCode: 201}, nil
+	}
+}
+
+func (frc *fakeRabbitClient) DeleteQueue(vhost, queue string) (*http.Response, error) {
+	vhostQueues, ok := frc.Queues[vhost]
+	if !ok {
+		return &http.Response{StatusCode: 404}, nil
+	}
+	delete(vhostQueues, queue)
+	// What does this actually return in real life?
 	return &http.Response{StatusCode: 204}, nil
 }
