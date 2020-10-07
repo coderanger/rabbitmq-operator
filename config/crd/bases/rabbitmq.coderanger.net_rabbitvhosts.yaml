@@ -57,8 +57,6 @@ spec:
                   type: string
                 username:
                   type: string
-                vhost:
-                  type: string
               type: object
             policies:
               additionalProperties:

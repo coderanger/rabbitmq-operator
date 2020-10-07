@@ -58,8 +58,6 @@ spec:
                   type: string
                 username:
                   type: string
-                vhost:
-                  type: string
               type: object
             permissions:
               items:

@@ -27,6 +27,5 @@ type RabbitConnection struct {
 	Port               int        `json:"port,omitempty"`
 	Username           string     `json:"username,omitempty"`
 	PasswordSecretRef  *SecretRef `json:"passwordSecretRef,omitempty"`
-	Vhost              string     `json:"vhost,omitempty"`
 	InsecureSkipVerify *bool      `json:"insecureSkipVerify,omitempty"`
 }
