@@ -28,7 +28,7 @@ import (
 	rabbitv1beta1 "github.com/coderanger/rabbitmq-operator/api/v1beta1"
 )
 
-var _ = FDescribe("Policies component", func() {
+var _ = Describe("Policies component", func() {
 	var obj *rabbitv1beta1.RabbitVhost
 	var rabbit *fakeRabbitClient
 	var helper *cu.UnitHelper
