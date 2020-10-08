@@ -31,7 +31,7 @@ import (
 
 var suiteHelper *cu.UnitSuiteHelper
 
-func TestControllers(t *testing.T) {
+func TestComponents(t *testing.T) {
 	RegisterFailHandler(Fail)
 
 	RunSpecsWithDefaultAndCustomReporters(t,

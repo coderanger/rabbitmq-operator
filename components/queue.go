@@ -33,7 +33,7 @@ func Queue() *queueComponent {
 	return &queueComponent{clientFactory: rabbitholeClientFactory}
 }
 
-func (comp *queueComponent) GetReadyCondition() string {
+func (_ *queueComponent) GetReadyCondition() string {
 	return "QueueReady"
 }
 

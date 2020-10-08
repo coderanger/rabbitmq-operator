@@ -37,7 +37,7 @@ type RabbitPermission struct {
 
 // RabbitUserSpec defines the desired state of RabbitUser
 type RabbitUserSpec struct {
-	Username    string             `json:"username"`
+	Username    string             `json:"username,omitempty"`
 	Tags        string             `json:"tags,omitempty"`
 	Permissions []RabbitPermission `json:"permissions,omitempty"`
 	// TODO TopicPermissions

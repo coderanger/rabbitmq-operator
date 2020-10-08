@@ -84,8 +84,6 @@ spec:
               type: string
             username:
               type: string
-          required:
-          - username
           type: object
         status:
           description: RabbitUserStatus defines the observed state of RabbitUser
