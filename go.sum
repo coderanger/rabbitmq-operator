@@ -45,8 +45,8 @@ github.com/cespare/xxhash/v2 v2.1.1 h1:6MnRN8NT7+YBpUIWxHtefFZOKTAPgGjpQSxqLNn0+
 github.com/cespare/xxhash/v2 v2.1.1/go.mod h1:VGX0DQ3Q6kWi7AoAeZDth3/j3BFtOZR5XLFGgcrjCOs=
 github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDkc90ppPyw=
 github.com/cockroachdb/datadriven v0.0.0-20190809214429-80d97fb3cbaa/go.mod h1:zn76sxSg3SzpJ0PPJaLDCu+Bu0Lg3sKTORVIj19EIF8=
-github.com/coderanger/controller-utils v0.0.0-20200925022637-d66f965e832d h1:ocmt1Z3IPPM8Xlp1jor8g3t25by89KNXb9KPMsYy2LI=
-github.com/coderanger/controller-utils v0.0.0-20200925022637-d66f965e832d/go.mod h1:rJ1UNTs5sBtIb8hBTEMegb8kwC7+zeXVxQ+7qexRSYE=
+github.com/coderanger/controller-utils v0.0.0-20201007093236-a9731681bf05 h1:l4fQLCgexY3jXutiQRa2bwJ+6vqF7zIB1Zy5/sE/oKE=
+github.com/coderanger/controller-utils v0.0.0-20201007093236-a9731681bf05/go.mod h1:uxF94/t8U1BX8VslGAZdfu5Z0glse56dblKoWQYfYO4=
 github.com/coreos/etcd v3.3.10+incompatible/go.mod h1:uF7uidLiAD3TWHmW31ZFd/JWoc32PjwdhPthX9715RE=
 github.com/coreos/go-etcd v2.0.0+incompatible/go.mod h1:Jez6KQU2B/sWsbdaef3ED8NzMklzPG4d5KIOhIy30Tk=
 github.com/coreos/go-oidc v2.1.0+incompatible/go.mod h1:CgnwVTmzoESiwO9qyAFEMiHoZ1nMCKZlZ9V6mm3/LKc=
