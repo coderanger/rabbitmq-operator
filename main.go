@@ -69,6 +69,7 @@ func main() {
 	}
 
 	controllers := []func(ctrl.Manager) error{
+		controllers.RabbitQueue,
 		controllers.RabbitUser,
 		controllers.RabbitVhost,
 	}
