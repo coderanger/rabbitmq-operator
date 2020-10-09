@@ -9,7 +9,9 @@ rules:
 - apiGroups: [authorization.k8s.io]
   resources: [subjectaccessreviews]
   verbs: [create]
-- resources:
+- apiGroups:
+  - ""
+  resources:
   - secrets
   verbs:
   - create

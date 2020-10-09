@@ -27,7 +27,7 @@ import (
 
 // +kubebuilder:rbac:groups=rabbitmq.coderanger.net,resources=rabbitusers,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=rabbitmq.coderanger.net,resources=rabbitusers/status,verbs=get;update;patch
-// +kubebuilder:rbac:groups=,resources=secrets,verbs=get;list;watch;create;update;patch
+// +kubebuilder:rbac:groups="",resources=secrets,verbs=get;list;watch;create;update;patch
 
 func RabbitUser(mgr ctrl.Manager) error {
 	return cu.NewReconciler(mgr).
