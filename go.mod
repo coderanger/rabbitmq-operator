@@ -3,7 +3,7 @@ module github.com/coderanger/rabbitmq-operator
 go 1.15
 
 require (
-	github.com/coderanger/controller-utils v0.0.0-20201007093236-a9731681bf05
+	github.com/coderanger/controller-utils v0.0.0-20201009072932-baf39c5caeb1
 	github.com/michaelklishin/rabbit-hole v1.5.0
 	github.com/onsi/ginkgo v1.14.1
 	github.com/onsi/gomega v1.10.2
