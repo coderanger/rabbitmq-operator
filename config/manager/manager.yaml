@@ -27,10 +27,10 @@ spec:
         image: ghcr.io/coderanger/rabbitmq-operator:latest
         resources:
           limits:
-            cpu: 100m
-            memory: 30Mi
+            cpu: 200m
+            memory: 60M
           requests:
             cpu: 100m
-            memory: 20Mi
+            memory: 40M
       terminationGracePeriodSeconds: 10
       serviceAccount: rabbitmq-operator
