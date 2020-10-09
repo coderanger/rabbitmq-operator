@@ -69,3 +69,14 @@ rules:
   - get
   - patch
   - update
+- apiGroups:
+  - v1
+  resources:
+  - secrets
+  verbs:
+  - create
+  - get
+  - list
+  - patch
+  - update
+  - watch
