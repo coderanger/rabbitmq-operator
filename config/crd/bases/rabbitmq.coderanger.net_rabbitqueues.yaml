@@ -36,6 +36,12 @@ spec:
         spec:
           description: RabbitUserSpec defines the desired state of RabbitUser
           properties:
+            arguments:
+              additionalProperties:
+                type: object
+              type: object
+            autoDelete:
+              type: boolean
             connection:
               properties:
                 host:
@@ -58,6 +64,8 @@ spec:
                 username:
                   type: string
               type: object
+            durable:
+              type: boolean
             queueName:
               type: string
             vhost:

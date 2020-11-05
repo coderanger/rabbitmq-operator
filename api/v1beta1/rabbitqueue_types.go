@@ -18,15 +18,19 @@ package v1beta1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/coderanger/controller-utils/conditions"
 )
 
 // RabbitUserSpec defines the desired state of RabbitUser
 type RabbitQueueSpec struct {
-	QueueName  string           `json:"queueName,omitempty"`
-	Vhost      string           `json:"vhost"`
-	Connection RabbitConnection `json:"connection,omitempty"`
+	QueueName  string                          `json:"queueName,omitempty"`
+	Vhost      string                          `json:"vhost"`
+	AutoDelete *bool                           `json:"autoDelete,omitempty"`
+	Durable    *bool                           `json:"durable,omitempty"`
+	Arguments  map[string]runtime.RawExtension `json:"arguments,omitempty"`
+	Connection RabbitConnection                `json:"connection,omitempty"`
 }
 
 // RabbitQueueStatus defines the observed state of RabbitQueue

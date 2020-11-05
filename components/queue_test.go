@@ -23,6 +23,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gstruct"
+	"k8s.io/apimachinery/pkg/runtime"
 
 	rabbitv1beta1 "github.com/coderanger/rabbitmq-operator/api/v1beta1"
 )
@@ -72,5 +73,47 @@ var _ = Describe("Queue component", func() {
 		}
 		helper.MustReconcile()
 		Expect(helper.Events).ToNot(Receive())
+	})
+
+	It("sets queue parameters", func() {
+		d := true
+		obj.Spec.Durable = &d
+		obj.Spec.Arguments = map[string]runtime.RawExtension{
+			"x-max-priority": {Raw: []byte("10")},
+		}
+		helper.MustReconcile()
+		Expect(rabbit.Queues).To(MatchAllKeys(Keys{
+			"/": MatchAllKeys(Keys{
+				"testing": PointTo(MatchFields(IgnoreExtras, Fields{
+					"Name":    Equal("testing"),
+					"Durable": BeTrue(),
+					"Arguments": MatchAllKeys(Keys{
+						"x-max-priority": BeEquivalentTo(10),
+					}),
+				})),
+			}),
+		}))
+	})
+
+	It("errors on mismatched queue parameters", func() {
+		d := true
+		obj.Spec.Durable = &d
+		obj.Spec.Arguments = map[string]runtime.RawExtension{
+			"x-max-priority": {Raw: []byte("10")},
+		}
+		rabbit.Queues = map[string]map[string]*rabbithole.QueueInfo{
+			"/": {
+				"testing": {
+					Name:    "testing",
+					Vhost:   "/",
+					Durable: true,
+					Arguments: map[string]interface{}{
+						"x-max-priority": 20,
+					},
+				},
+			},
+		}
+		_, err := helper.Reconcile()
+		Expect(err).To(MatchError("queue settings do not match: Argument x-max-priority currently 20 expecting 10"))
 	})
 })
