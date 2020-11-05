@@ -24,7 +24,7 @@ import (
 // log is for logging in this package.
 var rabbitQueueLog = logf.Log.WithName("webhooks").WithName("rabbitqueue")
 
-// +kubebuilder:webhook:path=/mutate-rabbitmq-coderanger-net-v1beta1-rabbitqueue,mutating=true,failurePolicy=fail,groups=rabbitmq.coderanger.net,resources=rabbitqueues,verbs=create;update,versions=v1beta1,name=mrabbitqueue.kb.io
+// +kubebuilder:webhook:path=/mutate-rabbitmq-coderanger-net-v1beta1-rabbitqueue,mutating=true,failurePolicy=fail,sideEffects=None,groups=rabbitmq.coderanger.net,resources=rabbitqueues,verbs=create;update,versions=v1beta1,name=mrabbitqueue.kb.io
 
 var _ webhook.Defaulter = &RabbitQueue{}
 

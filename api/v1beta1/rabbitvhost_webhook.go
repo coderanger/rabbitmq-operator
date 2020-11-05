@@ -28,7 +28,7 @@ import (
 // log is for logging in this package.
 var rabbitVhostLog = logf.Log.WithName("webhooks").WithName("rabbitvhost")
 
-// +kubebuilder:webhook:path=/mutate-rabbitmq-coderanger-net-v1beta1-rabbitvhost,mutating=true,failurePolicy=fail,groups=rabbitmq.coderanger.net,resources=rabbitvhosts,verbs=create;update,versions=v1beta1,name=mrabbitvhost.kb.io
+// +kubebuilder:webhook:path=/mutate-rabbitmq-coderanger-net-v1beta1-rabbitvhost,mutating=true,failurePolicy=fail,sideEffects=None,groups=rabbitmq.coderanger.net,resources=rabbitvhosts,verbs=create;update,versions=v1beta1,name=mrabbitvhost.kb.io
 
 var _ webhook.Defaulter = &RabbitVhost{}
 
@@ -41,7 +41,7 @@ func (obj *RabbitVhost) Default() {
 	}
 }
 
-// +kubebuilder:webhook:path=/validate-rabbitmq-coderanger-net-v1beta1-rabbitvhost,mutating=true,failurePolicy=fail,groups=rabbitmq.coderanger.net,resources=rabbitvhosts,verbs=create;update,versions=v1beta1,name=vrabbitvhost.kb.io
+// +kubebuilder:webhook:path=/validate-rabbitmq-coderanger-net-v1beta1-rabbitvhost,mutating=true,failurePolicy=fail,sideEffects=None,groups=rabbitmq.coderanger.net,resources=rabbitvhosts,verbs=create;update,versions=v1beta1,name=vrabbitvhost.kb.io
 
 var _ webhook.Validator = &RabbitVhost{}
 
