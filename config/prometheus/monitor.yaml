@@ -11,6 +11,7 @@ spec:
   endpoints:
     - path: /metrics
       port: https
+      scheme: https
   selector:
     matchLabels:
       control-plane: controller-manager
