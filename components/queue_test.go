@@ -78,8 +78,8 @@ var _ = Describe("Queue component", func() {
 	It("sets queue parameters", func() {
 		d := true
 		obj.Spec.Durable = &d
-		obj.Spec.Arguments = map[string]runtime.RawExtension{
-			"x-max-priority": {Raw: []byte("10")},
+		obj.Spec.Arguments = &runtime.RawExtension{
+			Raw: []byte(`{"x-max-priority":10}`),
 		}
 		helper.MustReconcile()
 		Expect(rabbit.Queues).To(MatchAllKeys(Keys{
@@ -98,8 +98,8 @@ var _ = Describe("Queue component", func() {
 	It("errors on mismatched queue parameters", func() {
 		d := true
 		obj.Spec.Durable = &d
-		obj.Spec.Arguments = map[string]runtime.RawExtension{
-			"x-max-priority": {Raw: []byte("10")},
+		obj.Spec.Arguments = &runtime.RawExtension{
+			Raw: []byte(`{"x-max-priority":10}`),
 		}
 		rabbit.Queues = map[string]map[string]*rabbithole.QueueInfo{
 			"/": {

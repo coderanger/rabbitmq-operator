@@ -80,13 +80,9 @@ func (comp *queueComponent) Reconcile(ctx *cu.Context) (cu.Result, error) {
 		}
 		if obj.Spec.Arguments != nil {
 			settings.Arguments = map[string]interface{}{}
-			for key, rawVal := range obj.Spec.Arguments {
-				var val interface{}
-				err := json.Unmarshal(rawVal.Raw, &val)
-				if err != nil {
-					return cu.Result{}, errors.Wrapf(err, "error decoding argument %s value %s for queue %s/%s", key, string(rawVal.Raw), obj.Namespace, obj.Name)
-				}
-				settings.Arguments[key] = val
+			err = json.Unmarshal(obj.Spec.Arguments.Raw, &settings.Arguments)
+			if err != nil {
+				return cu.Result{}, errors.Wrap(err, "error parsing arguments")
 			}
 		}
 		resp, err := rmqc.DeclareQueue(vhost, queue, settings)
@@ -108,20 +104,18 @@ func (comp *queueComponent) Reconcile(ctx *cu.Context) (cu.Result, error) {
 			validationErrors = append(validationErrors, fmt.Sprintf("Durable currently %v expecting %v", existingQueue.Durable, *obj.Spec.Durable))
 		}
 		if obj.Spec.Arguments != nil {
-			for key, rawVal := range obj.Spec.Arguments {
+			var args map[string]interface{}
+			err = json.Unmarshal(obj.Spec.Arguments.Raw, &args)
+			if err != nil {
+				return cu.Result{}, errors.Wrap(err, "error parsing arguments")
+			}
+
+			for key, val := range args {
 				existingVal, ok := existingQueue.Arguments[key]
 				if !ok {
-					validationErrors = append(validationErrors, fmt.Sprintf("Argument %s currently <not set> expecting %s", key, string(rawVal.Raw)))
-					continue
-				}
+					validationErrors = append(validationErrors, fmt.Sprintf("Argument %s currently <not set> expecting %v", key, val))
 
-				var val interface{}
-				err := json.Unmarshal(rawVal.Raw, &val)
-				if err != nil {
-					return cu.Result{}, errors.Wrapf(err, "error decoding argument %s value %s for queue %s/%s", key, string(rawVal.Raw), obj.Namespace, obj.Name)
-				}
-
-				if !reflect.DeepEqual(existingVal, val) {
+				} else if !reflect.DeepEqual(existingVal, val) {
 					validationErrors = append(validationErrors, fmt.Sprintf("Argument %s currently %v expecting %v", key, existingVal, val))
 				}
 			}

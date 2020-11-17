@@ -33,8 +33,6 @@ spec:
             description: RabbitUserSpec defines the desired state of RabbitUser
             properties:
               arguments:
-                additionalProperties:
-                  type: object
                 type: object
               autoDelete:
                 type: boolean

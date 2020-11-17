@@ -17,6 +17,10 @@ limitations under the License.
 package v1beta1
 
 import (
+	"encoding/json"
+
+	"github.com/pkg/errors"
+	"k8s.io/apimachinery/pkg/runtime"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 )
@@ -35,4 +39,48 @@ func (obj *RabbitQueue) Default() {
 	if obj.Spec.QueueName == "" {
 		obj.Spec.QueueName = obj.Name
 	}
+}
+
+// +kubebuilder:webhook:path=/validate-rabbitmq-coderanger-net-v1beta1-rabbitqueue,mutating=true,failurePolicy=fail,sideEffects=None,groups=rabbitmq.coderanger.net,resources=rabbitqueues,verbs=create;update,versions=v1beta1,name=vrabbitqueue.kb.io
+
+var _ webhook.Validator = &RabbitVhost{}
+
+// ValidateCreate implements webhook.Validator so a webhook will be registered for the type.
+func (obj *RabbitQueue) ValidateCreate() error {
+	rabbitQueueLog.Info("validate create", "name", obj.Name, "namespace", obj.Namespace)
+	return obj.validate()
+}
+
+// ValidateUpdate implements webhook.Validator so a webhook will be registered for the type.
+func (obj *RabbitQueue) ValidateUpdate(old runtime.Object) error {
+	rabbitQueueLog.Info("validate update", "name", obj.Name, "namespace", obj.Namespace)
+	return obj.validate()
+}
+
+// ValidateDelete implements webhook.Validator so a webhook will be registered for the type. Not used, just here for interface compliance.
+func (obj *RabbitQueue) ValidateDelete() error {
+	return nil
+}
+
+func (obj *RabbitQueue) validate() error {
+	if obj.Spec.Arguments != nil {
+		// Validate arguments.
+		var args map[string]interface{}
+		err := json.Unmarshal(obj.Spec.Arguments.Raw, &args)
+		if err != nil {
+			return errors.Wrap(err, "error parsing arguments")
+		}
+
+		// Limit values to strings, numbers, and bools.
+		for key, val := range args {
+			switch val.(type) {
+			case string:
+			case bool:
+			case float64:
+			default:
+				return errors.Errorf("argument %s has an invalid value: %v", key, val)
+			}
+		}
+	}
+	return nil
 }
