@@ -1,8 +1,8 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: rabbitmq-operator
-  namespace: rabbitmq-operator
+  name: controller-manager
+  namespace: system
 spec:
   template:
     spec:

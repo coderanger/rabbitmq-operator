@@ -3,15 +3,14 @@
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  name: rabbitmq-operator-metrics
-  namespace: rabbitmq-operator
+  labels:
+    control-plane: controller-manager
+  name: controller-manager-metrics-monitor
+  namespace: system
 spec:
   endpoints:
     - path: /metrics
       port: https
-      scheme: https
-      bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
-      tlsConfig:
-        insecureSkipVerify: true # for now
   selector:
-    matchLabels: {}
+    matchLabels:
+      control-plane: controller-manager

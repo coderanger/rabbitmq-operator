@@ -1,36 +1,38 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: rabbitmq-operator
+  labels:
+    control-plane: controller-manager
+  name: system
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: rabbitmq-operator
-  namespace: rabbitmq-operator
+  name: controller-manager
+  namespace: system
+  labels:
+    control-plane: controller-manager
 spec:
   selector:
     matchLabels:
-      app: rabbitmq-operator
+      control-plane: controller-manager
   replicas: 1
   template:
     metadata:
       labels:
-        app: rabbitmq-operator
+        control-plane: controller-manager
     spec:
       containers:
-      - name: manager
-        command:
+      - command:
         - /manager
         args:
         - --enable-leader-election
         image: ghcr.io/coderanger/rabbitmq-operator:latest
+        name: manager
         resources:
           limits:
-            cpu: 200m
-            memory: 60M
+            memory: 256M
           requests:
             cpu: 100m
-            memory: 40M
+            memory: 128M
       terminationGracePeriodSeconds: 10
-      serviceAccount: rabbitmq-operator

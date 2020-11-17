@@ -2,12 +2,11 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: leader-election-rolebinding
-  namespace: rabbitmq-operator
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
   name: leader-election-role
 subjects:
 - kind: ServiceAccount
-  name: rabbitmq-operator
-  namespace: rabbitmq-operator
+  name: default
+  namespace: system

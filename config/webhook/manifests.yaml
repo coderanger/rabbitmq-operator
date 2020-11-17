@@ -4,7 +4,7 @@ apiVersion: admissionregistration.k8s.io/v1
 kind: MutatingWebhookConfiguration
 metadata:
   creationTimestamp: null
-  name: rabbitmq-operator
+  name: mutating-webhook-configuration
 webhooks:
 - admissionReviewVersions:
   - v1
@@ -17,6 +17,28 @@ webhooks:
       path: /mutate-rabbitmq-coderanger-net-v1beta1-rabbitqueue
   failurePolicy: Fail
   name: mrabbitqueue.kb.io
+  rules:
+  - apiGroups:
+    - rabbitmq.coderanger.net
+    apiVersions:
+    - v1beta1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - rabbitqueues
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  - v1beta1
+  clientConfig:
+    caBundle: Cg==
+    service:
+      name: webhook-service
+      namespace: system
+      path: /validate-rabbitmq-coderanger-net-v1beta1-rabbitqueue
+  failurePolicy: Fail
+  name: vrabbitqueue.kb.io
   rules:
   - apiGroups:
     - rabbitmq.coderanger.net

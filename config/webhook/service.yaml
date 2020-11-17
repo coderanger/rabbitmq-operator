@@ -1,11 +1,12 @@
+
 apiVersion: v1
 kind: Service
 metadata:
   name: webhook-service
-  namespace: rabbitmq-operator
+  namespace: system
 spec:
   ports:
     - port: 443
       targetPort: 9443
   selector:
-    app: rabbitmq-operator
+    control-plane: controller-manager
