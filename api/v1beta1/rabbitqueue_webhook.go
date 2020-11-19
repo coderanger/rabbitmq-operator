@@ -28,7 +28,7 @@ import (
 // log is for logging in this package.
 var rabbitQueueLog = logf.Log.WithName("webhooks").WithName("rabbitqueue")
 
-// +kubebuilder:webhook:path=/mutate-rabbitmq-coderanger-net-v1beta1-rabbitqueue,mutating=true,failurePolicy=fail,sideEffects=None,groups=rabbitmq.coderanger.net,resources=rabbitqueues,verbs=create;update,versions=v1beta1,name=mrabbitqueue.kb.io
+// +kubebuilder:webhook:path=/mutate-rabbitmq-coderanger-net-v1beta1-rabbitqueue,mutating=true,failurePolicy=fail,sideEffects=None,groups=rabbitmq.coderanger.net,resources=rabbitqueues,verbs=create;update,versions=v1beta1,name=mrabbitqueue.kb.io,admissionReviewVersions=v1beta1
 
 var _ webhook.Defaulter = &RabbitQueue{}
 
@@ -41,7 +41,7 @@ func (obj *RabbitQueue) Default() {
 	}
 }
 
-// +kubebuilder:webhook:path=/validate-rabbitmq-coderanger-net-v1beta1-rabbitqueue,mutating=true,failurePolicy=fail,sideEffects=None,groups=rabbitmq.coderanger.net,resources=rabbitqueues,verbs=create;update,versions=v1beta1,name=vrabbitqueue.kb.io
+// +kubebuilder:webhook:path=/validate-rabbitmq-coderanger-net-v1beta1-rabbitqueue,mutating=true,failurePolicy=fail,sideEffects=None,groups=rabbitmq.coderanger.net,resources=rabbitqueues,verbs=create;update,versions=v1beta1,name=vrabbitqueue.kb.io,admissionReviewVersions=v1beta1
 
 var _ webhook.Validator = &RabbitVhost{}
 
