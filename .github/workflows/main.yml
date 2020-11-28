@@ -1,0 +1,21 @@
+name: main
+on: [push]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      TEST_RABBITMQ: http://guest:guest@localhost:15672
+
+    services:
+      rabbitmq:
+        image: rabbitmq:management
+        ports:
+        - 15672:15672
+        - 5672:5672
+        - 5671:5671
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+      - run: make test
