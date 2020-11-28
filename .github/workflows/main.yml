@@ -1,8 +1,25 @@
 name: main
-on: [push]
+on:
+  push:
+    tags:
+      - v*
+    branches:
+      - main
+  pull_request:
 
 jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v2
+        with:
+          version: v1.33
+
   test:
+    name: Test
     runs-on: ubuntu-latest
     env:
       TEST_RABBITMQ: http://guest:guest@localhost:15672
@@ -28,9 +45,11 @@ jobs:
       - run: make test
 
   build:
+    name: Container Build
     runs-on: ubuntu-latest
     needs:
     - test
+    - lint
     if: github.event_name != 'pull_request'
 
     steps:
