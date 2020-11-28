@@ -43,7 +43,7 @@ func (obj *RabbitQueue) Default() {
 
 // +kubebuilder:webhook:path=/validate-rabbitmq-coderanger-net-v1beta1-rabbitqueue,mutating=true,failurePolicy=fail,sideEffects=None,groups=rabbitmq.coderanger.net,resources=rabbitqueues,verbs=create;update,versions=v1beta1,name=vrabbitqueue.kb.io,admissionReviewVersions=v1beta1
 
-var _ webhook.Validator = &RabbitVhost{}
+var _ webhook.Validator = &RabbitQueue{}
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type.
 func (obj *RabbitQueue) ValidateCreate() error {
