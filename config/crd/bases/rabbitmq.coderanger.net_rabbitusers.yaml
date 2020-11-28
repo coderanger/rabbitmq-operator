@@ -33,7 +33,6 @@ spec:
             description: RabbitUserSpec defines the desired state of RabbitUser
             properties:
               connection:
-                description: TODO TopicPermissions
                 properties:
                   host:
                     type: string
@@ -55,6 +54,9 @@ spec:
                   username:
                     type: string
                 type: object
+              outputVhost:omitempty:
+                description: TODO TopicPermissions
+                type: boolean
               permissions:
                 items:
                   description: RabbitmqPermission defines a single user permissions entry.
@@ -79,6 +81,8 @@ spec:
                 type: string
               username:
                 type: string
+            required:
+            - outputVhost:omitempty
             type: object
           status:
             description: RabbitUserStatus defines the observed state of RabbitUser

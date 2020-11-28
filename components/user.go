@@ -134,6 +134,10 @@ func (comp *userComponent) Reconcile(ctx *cu.Context) (cu.Result, error) {
 	// Strip off the port so it uses the default AMQP port.
 	uri.Host = uri.Hostname()
 	uri.User = url.UserPassword(username, password)
+	// Set a path if needed.
+	if obj.Spec.OutputVhost {
+		uri.Path = obj.Spec.Permissions[0].Vhost
+	}
 	ctx.Data["uri"] = uri
 
 	// Good to go.

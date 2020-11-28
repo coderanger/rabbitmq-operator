@@ -72,6 +72,26 @@ webhooks:
     service:
       name: webhook-service
       namespace: system
+      path: /validate-rabbitmq-coderanger-net-v1beta1-rabbituser
+  failurePolicy: Fail
+  name: vrabbituser.kb.io
+  rules:
+  - apiGroups:
+    - rabbitmq.coderanger.net
+    apiVersions:
+    - v1beta1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - rabbitusers
+  sideEffects: None
+- admissionReviewVersions:
+  - v1beta1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
       path: /mutate-rabbitmq-coderanger-net-v1beta1-rabbitvhost
   failurePolicy: Fail
   name: mrabbitvhost.kb.io

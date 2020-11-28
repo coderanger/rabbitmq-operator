@@ -21,6 +21,7 @@ import (
 
 	cu "github.com/coderanger/controller-utils"
 	"github.com/coderanger/controller-utils/randstring"
+	rabbithole "github.com/michaelklishin/rabbit-hole"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
@@ -33,11 +34,11 @@ import (
 
 var _ = Describe("RabbitUser controller", func() {
 	var helper *cu.FunctionalHelper
-	// var rmqc *rabbithole.Client
+	var rmqc *rabbithole.Client
 
 	BeforeEach(func() {
 		helper = suiteHelper.MustStart(RabbitUser)
-		// rmqc = connect()
+		rmqc = connect()
 	})
 
 	AfterEach(func() {
@@ -110,5 +111,40 @@ var _ = Describe("RabbitUser controller", func() {
 		vhosts, err := rmqcUser.ListVhosts()
 		Expect(err).ToNot(HaveOccurred())
 		Expect(vhosts).ToNot(BeEmpty())
+	})
+
+	It("writes the vhost into the secret when using outputVhost", func() {
+		c := helper.TestClient
+
+		vhost := "testing-" + randstring.MustRandomString(5)
+		_, err := rmqc.PutVhost(vhost, rabbithole.VhostSettings{})
+		Expect(err).ToNot(HaveOccurred())
+		defer func() {
+			_, err := rmqc.DeleteVhost(vhost)
+			Expect(err).ToNot(HaveOccurred())
+		}()
+
+		user := &rabbitv1beta1.RabbitUser{
+			ObjectMeta: metav1.ObjectMeta{Name: "testing"},
+			Spec: rabbitv1beta1.RabbitUserSpec{
+				Username:    "testing-" + randstring.MustRandomString(5),
+				Tags:        "management",
+				OutputVhost: true,
+				Permissions: []rabbitv1beta1.RabbitPermission{
+					{
+						Vhost:     vhost,
+						Configure: ".*",
+						Write:     ".*",
+						Read:      ".*",
+					},
+				},
+			},
+		}
+		c.Create(user)
+		c.EventuallyGetName("testing", user, c.EventuallyReady())
+
+		secret := &corev1.Secret{}
+		c.GetName("testing-rabbituser", secret)
+		Expect(secret.Data).To(HaveKeyWithValue("RABBIT_HOST", HaveSuffix("/"+vhost)))
 	})
 })
