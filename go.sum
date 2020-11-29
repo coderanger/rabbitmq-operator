@@ -53,6 +53,8 @@ github.com/coderanger/controller-runtime v0.2.0-beta.1.0.20201115004253-9bec1fef
 github.com/coderanger/controller-runtime v0.2.0-beta.1.0.20201115004253-9bec1fefa8ca/go.mod h1:WlZNXcM0++oyaQt4B7C2lEE5JYRs8vJUzRP4N4JpdAY=
 github.com/coderanger/controller-utils v0.0.0-20201009072932-baf39c5caeb1 h1:RByIkNIGfR6z6Rg/5lIyAs1GKBLpvUFYvlFG6jnKZfY=
 github.com/coderanger/controller-utils v0.0.0-20201009072932-baf39c5caeb1/go.mod h1:uxF94/t8U1BX8VslGAZdfu5Z0glse56dblKoWQYfYO4=
+github.com/coderanger/controller-utils v0.0.0-20201129085805-351b6be70147 h1:HBhN/oBpePI8D1JFMd6jOvT+Nv7NA8JZdXROt+YPWZU=
+github.com/coderanger/controller-utils v0.0.0-20201129085805-351b6be70147/go.mod h1:/2z2gu/EiUOTuX0EYYQ6v/ruB5tP3oCmMUt0/gdzJ5Q=
 github.com/coreos/bbolt v1.3.2/go.mod h1:iRUV2dpdMOn7Bo10OQBFzIJO9kkE559Wcmn+qkEiiKk=
 github.com/coreos/etcd v3.3.10+incompatible/go.mod h1:uF7uidLiAD3TWHmW31ZFd/JWoc32PjwdhPthX9715RE=
 github.com/coreos/go-etcd v2.0.0+incompatible/go.mod h1:Jez6KQU2B/sWsbdaef3ED8NzMklzPG4d5KIOhIy30Tk=

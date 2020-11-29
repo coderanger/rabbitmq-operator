@@ -5,7 +5,7 @@ go 1.15
 replace sigs.k8s.io/controller-runtime => github.com/coderanger/controller-runtime v0.2.0-beta.1.0.20201115004253-9bec1fefa8ca
 
 require (
-	github.com/coderanger/controller-utils v0.0.0-20201009072932-baf39c5caeb1
+	github.com/coderanger/controller-utils v0.0.0-20201129085805-351b6be70147
 	github.com/michaelklishin/rabbit-hole v1.5.0
 	github.com/onsi/ginkgo v1.14.1
 	github.com/onsi/gomega v1.10.2
