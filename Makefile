@@ -83,3 +83,7 @@ endif
 # Display a coverage report
 cover:
 	go tool cover -html=cover.out
+
+# Run linter.
+lint:
+	golangci-lint run ./...
