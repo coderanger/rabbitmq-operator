@@ -54,7 +54,7 @@ spec:
                   username:
                     type: string
                 type: object
-              outputVhost:omitempty:
+              outputVhost:
                 description: TODO TopicPermissions
                 type: boolean
               permissions:
@@ -81,8 +81,6 @@ spec:
                 type: string
               username:
                 type: string
-            required:
-            - outputVhost:omitempty
             type: object
           status:
             description: RabbitUserStatus defines the observed state of RabbitUser

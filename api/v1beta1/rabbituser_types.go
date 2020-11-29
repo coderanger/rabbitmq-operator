@@ -41,7 +41,7 @@ type RabbitUserSpec struct {
 	Tags        string             `json:"tags,omitempty"`
 	Permissions []RabbitPermission `json:"permissions,omitempty"`
 	// TODO TopicPermissions
-	OutputVhost bool             `json:"outputVhost:omitempty"`
+	OutputVhost bool             `json:"outputVhost,omitempty"`
 	Connection  RabbitConnection `json:"connection,omitempty"`
 }
 
