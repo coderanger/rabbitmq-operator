@@ -61,8 +61,6 @@ spec:
                       description: 'What this policy applies to: "queues", "exchanges", etc.'
                       type: string
                     definition:
-                      additionalProperties:
-                        type: object
                       description: Additional arguments added to the entities (queues, exchanges or both) that match a policy
                       type: object
                     pattern:

@@ -34,7 +34,7 @@ type RabbitPolicy struct {
 	Priority int `json:"priority,omitempty"`
 	// Additional arguments added to the entities (queues,
 	// exchanges or both) that match a policy
-	Definition map[string]runtime.RawExtension `json:"definition"`
+	Definition runtime.RawExtension `json:"definition"`
 }
 
 // RabbitVhostSpec defines the desired state of RabbitVhost

@@ -65,12 +65,12 @@ func (obj *RabbitVhost) ValidateDelete() error {
 func (obj *RabbitVhost) validate() error {
 	// Validate policies.
 	for name, specPolicy := range obj.Spec.Policies {
-		for key, rawDefValue := range specPolicy.Definition {
-			var val interface{}
-			err := json.Unmarshal(rawDefValue.Raw, &val)
-			if err != nil {
-				return errors.Wrapf(err, "error decoding policy %s: %s", key, string(rawDefValue.Raw))
-			}
+		var definition map[string]interface{}
+		err := json.Unmarshal(specPolicy.Definition.Raw, &definition)
+		if err != nil {
+			return errors.Wrapf(err, "error parsing definition %s", name)
+		}
+		for key, val := range definition {
 			switch key {
 			case "ha-mode":
 				strVal, ok := val.(string)

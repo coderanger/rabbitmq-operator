@@ -57,21 +57,15 @@ func (comp *policiesComponent) Reconcile(ctx *cu.Context) (cu.Result, error) {
 	desiredPolicies := map[string]*rabbithole.Policy{}
 	for name, specPolicy := range obj.Spec.Policies {
 		policy := &rabbithole.Policy{
-			Vhost:      vhost,
-			Pattern:    specPolicy.Pattern,
-			ApplyTo:    specPolicy.ApplyTo,
-			Name:       fmt.Sprintf("%s-%s", vhost, name),
-			Priority:   specPolicy.Priority,
-			Definition: map[string]interface{}{},
+			Vhost:    vhost,
+			Pattern:  specPolicy.Pattern,
+			ApplyTo:  specPolicy.ApplyTo,
+			Name:     fmt.Sprintf("%s-%s", vhost, name),
+			Priority: specPolicy.Priority,
 		}
-		for defKey, rawDefValue := range specPolicy.Definition {
-			var val interface{}
-			// TODO in a validate webhook, check that the value is of a type that we know is okay.
-			err := json.Unmarshal(rawDefValue.Raw, &val)
-			if err != nil {
-				return cu.Result{}, errors.Wrapf(err, "error decoding defintiion %s value %s for vhost %s/%s", defKey, string(rawDefValue.Raw), obj.Namespace, obj.Name)
-			}
-			policy.Definition[defKey] = val
+		err := json.Unmarshal(specPolicy.Definition.Raw, &policy.Definition)
+		if err != nil {
+			return cu.Result{}, errors.Wrapf(err, "error parsing defintiion %s for vhost %s/%s", name, obj.Namespace, obj.Name)
 		}
 		desiredPolicies[policy.Name] = policy
 	}

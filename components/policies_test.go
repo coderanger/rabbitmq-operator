@@ -52,10 +52,8 @@ var _ = Describe("Policies component", func() {
 	It("creates a policy", func() {
 		obj.Spec.Policies["testpol"] = rabbitv1beta1.RabbitPolicy{
 			Pattern: ".*",
-			Definition: map[string]runtime.RawExtension{
-				"ha-mode": {
-					Raw: []byte(`"all"`),
-				},
+			Definition: runtime.RawExtension{
+				Raw: []byte(`{"ha-mode": "all"}`),
 			},
 		}
 		helper.MustReconcile()
@@ -76,10 +74,8 @@ var _ = Describe("Policies component", func() {
 	It("updates a non-matching policy", func() {
 		obj.Spec.Policies["testpol"] = rabbitv1beta1.RabbitPolicy{
 			Pattern: ".*",
-			Definition: map[string]runtime.RawExtension{
-				"ha-mode": {
-					Raw: []byte(`"all"`),
-				},
+			Definition: runtime.RawExtension{
+				Raw: []byte(`{"ha-mode": "all"}`),
 			},
 		}
 		rabbit.Policies = map[string]map[string]*rabbithole.Policy{
