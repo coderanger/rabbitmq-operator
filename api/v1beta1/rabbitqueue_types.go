@@ -25,10 +25,11 @@ import (
 
 // RabbitUserSpec defines the desired state of RabbitUser
 type RabbitQueueSpec struct {
-	QueueName  string                `json:"queueName,omitempty"`
-	Vhost      string                `json:"vhost"`
-	AutoDelete *bool                 `json:"autoDelete,omitempty"`
-	Durable    *bool                 `json:"durable,omitempty"`
+	QueueName  string `json:"queueName,omitempty"`
+	Vhost      string `json:"vhost"`
+	AutoDelete *bool  `json:"autoDelete,omitempty"`
+	Durable    *bool  `json:"durable,omitempty"`
+	// +kubebuilder:pruning:PreserveUnknownFields
 	Arguments  *runtime.RawExtension `json:"arguments,omitempty"`
 	Connection RabbitConnection      `json:"connection,omitempty"`
 }

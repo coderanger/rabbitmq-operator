@@ -34,6 +34,7 @@ spec:
             properties:
               arguments:
                 type: object
+                x-kubernetes-preserve-unknown-fields: true
               autoDelete:
                 type: boolean
               connection:

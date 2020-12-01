@@ -34,6 +34,7 @@ type RabbitPolicy struct {
 	Priority int `json:"priority,omitempty"`
 	// Additional arguments added to the entities (queues,
 	// exchanges or both) that match a policy
+	// +kubebuilder:pruning:PreserveUnknownFields
 	Definition runtime.RawExtension `json:"definition"`
 }
 

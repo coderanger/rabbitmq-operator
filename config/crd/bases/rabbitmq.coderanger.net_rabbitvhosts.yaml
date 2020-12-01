@@ -63,6 +63,7 @@ spec:
                     definition:
                       description: Additional arguments added to the entities (queues, exchanges or both) that match a policy
                       type: object
+                      x-kubernetes-preserve-unknown-fields: true
                     pattern:
                       description: Regular expression pattern used to match queues and exchanges, , e.g. "^ha\..+"
                       type: string
