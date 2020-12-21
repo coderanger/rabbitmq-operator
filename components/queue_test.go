@@ -95,7 +95,7 @@ var _ = Describe("Queue component", func() {
 		}))
 	})
 
-	It("errors on mismatched queue parameters", func() {
+	It("recreates on mismatched queue parameters", func() {
 		d := true
 		obj.Spec.Durable = &d
 		obj.Spec.Arguments = &runtime.RawExtension{
@@ -113,7 +113,17 @@ var _ = Describe("Queue component", func() {
 				},
 			},
 		}
-		_, err := helper.Reconcile()
-		Expect(err).To(MatchError("queue settings do not match: Argument x-max-priority currently 20 expecting 10"))
+		helper.MustReconcile()
+		Expect(rabbit.Queues).To(MatchAllKeys(Keys{
+			"/": MatchAllKeys(Keys{
+				"testing": PointTo(MatchFields(IgnoreExtras, Fields{
+					"Name":    Equal("testing"),
+					"Durable": BeTrue(),
+					"Arguments": MatchAllKeys(Keys{
+						"x-max-priority": BeEquivalentTo(10),
+					}),
+				})),
+			}),
+		}))
 	})
 })

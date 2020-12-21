@@ -69,33 +69,8 @@ func (comp *queueComponent) Reconcile(ctx *cu.Context) (cu.Result, error) {
 		}
 	}
 
-	// Create the queue if needed.
-	if createQueue {
-		settings := rabbithole.QueueSettings{}
-		if obj.Spec.AutoDelete != nil {
-			settings.AutoDelete = *obj.Spec.AutoDelete
-		}
-		if obj.Spec.Durable != nil {
-			settings.Durable = *obj.Spec.Durable
-		}
-		if obj.Spec.Arguments != nil {
-			settings.Arguments = map[string]interface{}{}
-			err = json.Unmarshal(obj.Spec.Arguments.Raw, &settings.Arguments)
-			if err != nil {
-				return cu.Result{}, errors.Wrap(err, "error parsing arguments")
-			}
-		}
-		resp, err := rmqc.DeclareQueue(vhost, queue, settings)
-		if err != nil {
-			return cu.Result{}, errors.Wrapf(err, "error creating queue %s on vhost %s", queue, vhost)
-		}
-		if resp.StatusCode != 201 {
-			return cu.Result{}, errors.Errorf("unable to create queue %s on vhost %s, got response code %v", queue, vhost, resp.StatusCode)
-		}
-		ctx.Events.Eventf(obj, "Normal", "QueueCreated", "RabbitMQ queue %s on vhost %s created", queue, vhost)
-	} else {
-		// Check if the spec fields match, except we can't easily fix them if they don't since you have to drop and
-		// recreate the queue and rabbithole doesn't expose the `?if-empty=true` flag on queue deletes that would make it safe(er).
+	// If the queue already exists, check if the spec fields match the current params. If not, flag for recreate.
+	if !createQueue {
 		validationErrors := []string{}
 		if obj.Spec.AutoDelete != nil && existingQueue.AutoDelete != *obj.Spec.AutoDelete {
 			validationErrors = append(validationErrors, fmt.Sprintf("AutoDelete currently %v expecting %v", existingQueue.AutoDelete, *obj.Spec.AutoDelete))
@@ -121,9 +96,40 @@ func (comp *queueComponent) Reconcile(ctx *cu.Context) (cu.Result, error) {
 			}
 		}
 		// Ignore any extra arguments I guess? Not sure the right behavior there.
+		// Try to delete the queue.
 		if len(validationErrors) != 0 {
-			return cu.Result{RequeueAfter: time.Minute}, errors.Errorf("queue settings do not match: %s", strings.Join(validationErrors, ", "))
+			_, err := rmqc.DeleteQueue(obj.Spec.Vhost, obj.Spec.QueueName, rabbithole.QueueDeleteOptions{IfEmpty: true})
+			if err != nil {
+				return cu.Result{RequeueAfter: time.Minute}, errors.Errorf("queue settings do not match: %s", strings.Join(validationErrors, ", "))
+			}
+			createQueue = true
 		}
+	}
+
+	// Create the queue if needed.
+	if createQueue {
+		settings := rabbithole.QueueSettings{}
+		if obj.Spec.AutoDelete != nil {
+			settings.AutoDelete = *obj.Spec.AutoDelete
+		}
+		if obj.Spec.Durable != nil {
+			settings.Durable = *obj.Spec.Durable
+		}
+		if obj.Spec.Arguments != nil {
+			settings.Arguments = map[string]interface{}{}
+			err = json.Unmarshal(obj.Spec.Arguments.Raw, &settings.Arguments)
+			if err != nil {
+				return cu.Result{}, errors.Wrap(err, "error parsing arguments")
+			}
+		}
+		resp, err := rmqc.DeclareQueue(vhost, queue, settings)
+		if err != nil {
+			return cu.Result{}, errors.Wrapf(err, "error creating queue %s on vhost %s", queue, vhost)
+		}
+		if resp.StatusCode != 201 {
+			return cu.Result{}, errors.Errorf("unable to create queue %s on vhost %s, got response code %v", queue, vhost, resp.StatusCode)
+		}
+		ctx.Events.Eventf(obj, "Normal", "QueueCreated", "RabbitMQ queue %s on vhost %s created", queue, vhost)
 	}
 
 	ctx.Conditions.SetfTrue("QueueReady", "QueueExists", "RabbitMQ queue %s on vhost %s exists", queue, vhost)
