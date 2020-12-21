@@ -23,7 +23,7 @@ import (
 	"reflect"
 
 	cu "github.com/coderanger/controller-utils"
-	rabbithole "github.com/michaelklishin/rabbit-hole"
+	rabbithole "github.com/michaelklishin/rabbit-hole/v2"
 	"github.com/pkg/errors"
 
 	rabbitv1beta1 "github.com/coderanger/rabbitmq-operator/api/v1beta1"

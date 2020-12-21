@@ -6,9 +6,9 @@ replace sigs.k8s.io/controller-runtime => github.com/coderanger/controller-runti
 
 require (
 	github.com/coderanger/controller-utils v0.0.0-20201201024309-ed387a1e6f86
-	github.com/michaelklishin/rabbit-hole v1.5.0
-	github.com/onsi/ginkgo v1.14.1
-	github.com/onsi/gomega v1.10.2
+	github.com/michaelklishin/rabbit-hole/v2 v2.0.0-20201216035320-4572900f3492
+	github.com/onsi/ginkgo v1.14.2
+	github.com/onsi/gomega v1.10.3
 	github.com/pkg/errors v0.9.1
 	github.com/shurcooL/vfsgen v0.0.0-20200824052919-0d455de96546 // indirect
 	github.com/streadway/amqp v1.0.0

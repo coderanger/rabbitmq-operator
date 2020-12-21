@@ -21,7 +21,7 @@ import (
 
 	cu "github.com/coderanger/controller-utils"
 	. "github.com/coderanger/controller-utils/tests/matchers"
-	rabbithole "github.com/michaelklishin/rabbit-hole"
+	rabbithole "github.com/michaelklishin/rabbit-hole/v2"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gstruct"
@@ -83,7 +83,7 @@ var _ = Describe("User component", func() {
 		helper.MustReconcile()
 		Expect(rabbit.Users).To(ConsistOf(PointTo(MatchFields(IgnoreExtras, Fields{
 			"Name": Equal("testing"),
-			"Tags": Equal(""),
+			"Tags": BeEmpty(),
 		}))))
 		Expect(helper.Events).To(Receive(Equal("Normal UserCreated RabbitMQ user testing created")))
 		Expect(obj).To(HaveCondition("UserReady").WithStatus("False").WithReason("UserPending"))
@@ -103,7 +103,7 @@ var _ = Describe("User component", func() {
 		helper.MustReconcile()
 		Expect(rabbit.Users).To(ConsistOf(PointTo(MatchFields(IgnoreExtras, Fields{
 			"Name": Equal("other"),
-			"Tags": Equal(""),
+			"Tags": BeEmpty(),
 		}))))
 		Expect(helper.Events).To(Receive(Equal("Normal UserCreated RabbitMQ user other created")))
 	})
@@ -113,7 +113,7 @@ var _ = Describe("User component", func() {
 		helper.MustReconcile()
 		Expect(rabbit.Users).To(ConsistOf(PointTo(MatchFields(IgnoreExtras, Fields{
 			"Name": Equal("testing"),
-			"Tags": Equal("administrator"),
+			"Tags": ContainElements("administrator"),
 		}))))
 		Expect(helper.Events).To(Receive(Equal("Normal UserCreated RabbitMQ user testing created")))
 	})
@@ -163,7 +163,7 @@ var _ = Describe("User component", func() {
 		rabbit.Users = []*rabbithole.UserInfo{
 			{
 				Name:             "testing",
-				Tags:             "viewer",
+				Tags:             rabbithole.UserTags{"viewer"},
 				PasswordHash:     "KDYrITM0cP6OZ4+ZoB0+T1SY9Ro1hbOgH4iiaPbLAAoPb0Xn", // Hash("supersecret")
 				HashingAlgorithm: rabbithole.HashingAlgorithmSHA256,
 			},
@@ -171,7 +171,7 @@ var _ = Describe("User component", func() {
 		helper.MustReconcile()
 		Expect(rabbit.Users).To(ConsistOf(PointTo(MatchFields(IgnoreExtras, Fields{
 			"Name": Equal("testing"),
-			"Tags": Equal("monitoring"),
+			"Tags": ContainElements("monitoring"),
 		}))))
 		Expect(helper.Events).To(Receive(Equal("Normal UserUpdated RabbitMQ user testing updated")))
 	})

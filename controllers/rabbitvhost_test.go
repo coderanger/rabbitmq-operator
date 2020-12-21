@@ -22,7 +22,7 @@ import (
 	cu "github.com/coderanger/controller-utils"
 	"github.com/coderanger/controller-utils/conditions"
 	"github.com/coderanger/controller-utils/randstring"
-	rabbithole "github.com/michaelklishin/rabbit-hole"
+	rabbithole "github.com/michaelklishin/rabbit-hole/v2"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"

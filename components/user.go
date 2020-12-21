@@ -25,10 +25,11 @@ import (
 	"hash"
 	"io/ioutil"
 	"net/url"
+	"strings"
 	"time"
 
 	cu "github.com/coderanger/controller-utils"
-	rabbithole "github.com/michaelklishin/rabbit-hole"
+	rabbithole "github.com/michaelklishin/rabbit-hole/v2"
 	"github.com/pkg/errors"
 
 	rabbitv1beta1 "github.com/coderanger/rabbitmq-operator/api/v1beta1"
@@ -72,8 +73,9 @@ func (comp *userComponent) Reconcile(ctx *cu.Context) (cu.Result, error) {
 			return cu.Result{}, errors.Wrapf(err, "error getting user %s", username)
 		}
 	} else {
-		// Diff the existing user.
-		if obj.Spec.Tags != existingUser.Tags {
+		// Diff the existing user. TODO: This code is bad, it should probably sort and compare one by one?
+		existingTags := strings.Join(existingUser.Tags, ",")
+		if obj.Spec.Tags != existingTags {
 			updateUser = true
 		}
 		hashedPassword, err := hashRabbitPassword(password, existingUser.HashingAlgorithm, existingUser.PasswordHash)
@@ -94,7 +96,11 @@ func (comp *userComponent) Reconcile(ctx *cu.Context) (cu.Result, error) {
 		}
 
 		// Put the user, this will create or update depending on if the user already exists.
-		resp, err := rmqc.PutUser(username, rabbithole.UserSettings{PasswordHash: hashedPassword, HashingAlgorithm: DEFAULT_HASH_ALGORITHM, Tags: obj.Spec.Tags})
+		var tags rabbithole.UserTags
+		if obj.Spec.Tags != "" {
+			tags = strings.Split(obj.Spec.Tags, ",")
+		}
+		resp, err := rmqc.PutUser(username, rabbithole.UserSettings{PasswordHash: hashedPassword, HashingAlgorithm: DEFAULT_HASH_ALGORITHM, Tags: tags})
 		if err != nil {
 			return cu.Result{}, errors.Wrapf(err, "error putting user %s", username)
 		}

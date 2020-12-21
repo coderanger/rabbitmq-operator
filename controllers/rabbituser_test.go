@@ -21,7 +21,7 @@ import (
 
 	cu "github.com/coderanger/controller-utils"
 	"github.com/coderanger/controller-utils/randstring"
-	rabbithole "github.com/michaelklishin/rabbit-hole"
+	rabbithole "github.com/michaelklishin/rabbit-hole/v2"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"

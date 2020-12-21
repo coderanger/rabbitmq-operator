@@ -26,7 +26,7 @@ import (
 	"os"
 	"strconv"
 
-	rabbithole "github.com/michaelklishin/rabbit-hole"
+	rabbithole "github.com/michaelklishin/rabbit-hole/v2"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -54,7 +54,7 @@ type rabbitManager interface {
 	ListQueuesIn(string) ([]rabbithole.QueueInfo, error)
 	GetQueue(string, string) (*rabbithole.DetailedQueueInfo, error)
 	DeclareQueue(string, string, rabbithole.QueueSettings) (*http.Response, error)
-	DeleteQueue(string, string) (*http.Response, error)
+	DeleteQueue(string, string, ...rabbithole.QueueDeleteOptions) (*http.Response, error)
 }
 
 type rabbitClientFactory func(uri string, user string, pass string, t *http.Transport) (rabbitManager, error)

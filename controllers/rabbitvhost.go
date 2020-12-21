@@ -18,7 +18,9 @@ package controllers
 
 import (
 	cu "github.com/coderanger/controller-utils"
+	"github.com/coderanger/controller-utils/predicates"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/builder"
 
 	rabbitmqv1beta1 "github.com/coderanger/rabbitmq-operator/api/v1beta1"
 	"github.com/coderanger/rabbitmq-operator/components"
@@ -30,7 +32,7 @@ import (
 
 func RabbitVhost(mgr ctrl.Manager) error {
 	return cu.NewReconciler(mgr).
-		For(&rabbitmqv1beta1.RabbitVhost{}).
+		For(&rabbitmqv1beta1.RabbitVhost{}, builder.WithPredicates(predicates.UpdateDebug())).
 		Templates(templates.Templates).
 		Component("vhost", components.Vhost()).
 		Component("policies", components.Policies()).

@@ -20,7 +20,7 @@ package components
 import (
 	"net/http"
 
-	rabbithole "github.com/michaelklishin/rabbit-hole"
+	rabbithole "github.com/michaelklishin/rabbit-hole/v2"
 )
 
 type fakeRabbitClient struct {
@@ -281,7 +281,7 @@ func (frc *fakeRabbitClient) DeclareQueue(vhost, queue string, info rabbithole.Q
 	}
 }
 
-func (frc *fakeRabbitClient) DeleteQueue(vhost, queue string) (*http.Response, error) {
+func (frc *fakeRabbitClient) DeleteQueue(vhost, queue string, _ ...rabbithole.QueueDeleteOptions) (*http.Response, error) {
 	vhostQueues, ok := frc.Queues[vhost]
 	if !ok {
 		return &http.Response{StatusCode: 404}, nil
