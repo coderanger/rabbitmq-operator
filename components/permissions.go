@@ -18,9 +18,18 @@ limitations under the License.
 package components
 
 import (
+	"context"
+
 	cu "github.com/coderanger/controller-utils"
+	"github.com/go-logr/logr"
 	rabbithole "github.com/michaelklishin/rabbit-hole/v2"
 	"github.com/pkg/errors"
+	"k8s.io/apimachinery/pkg/types"
+	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	rabbitv1beta1 "github.com/coderanger/rabbitmq-operator/api/v1beta1"
 )
@@ -29,8 +38,49 @@ type permissionsComponent struct {
 	clientFactory rabbitClientFactory
 }
 
+type permissionsComponentWatchMap struct {
+	client client.Client
+	log    logr.Logger
+}
+
 func Permissions() *permissionsComponent {
 	return &permissionsComponent{clientFactory: rabbitholeClientFactory}
+}
+
+func (comp *permissionsComponent) Setup(ctx *cu.Context, bldr *ctrl.Builder) error {
+	bldr.Watches(
+		&source.Kind{Type: &rabbitv1beta1.RabbitVhost{}},
+		&handler.EnqueueRequestsFromMapFunc{ToRequests: &permissionsComponentWatchMap{client: ctx.Client, log: ctx.Log}},
+	)
+	return nil
+}
+
+// Watch map function used above.
+// Obj is a Vhost that just got an event, map it back to any User with * permissions.
+func (wm *permissionsComponentWatchMap) Map(obj handler.MapObject) []reconcile.Request {
+	requests := []reconcile.Request{}
+	// Find any User objects that have * vhost permissions so they can be updated.
+	users := &rabbitv1beta1.RabbitUserList{}
+	err := wm.client.List(context.Background(), users)
+	if err != nil {
+		wm.log.Error(err, "error listing users")
+		// TODO Metric to track this for alerting.
+		return requests
+	}
+	for _, user := range users.Items {
+		for _, perm := range user.Spec.Permissions {
+			if perm.Vhost == "*" {
+				requests = append(requests, reconcile.Request{
+					NamespacedName: types.NamespacedName{
+						Name:      user.Name,
+						Namespace: user.Namespace,
+					},
+				})
+				break
+			}
+		}
+	}
+	return requests
 }
 
 func (comp *permissionsComponent) Reconcile(ctx *cu.Context) (cu.Result, error) {
@@ -49,36 +99,61 @@ func (comp *permissionsComponent) Reconcile(ctx *cu.Context) (cu.Result, error) 
 		username = obj.Name
 	}
 
+	// Look for a `*` vhost in the spec, move the rest into a holding pen.
+	specPermMap := map[string]*rabbitv1beta1.RabbitPermission{}
+	var allVhostPerm *rabbitv1beta1.RabbitPermission
+	for _, perm := range obj.Spec.Permissions {
+		permCopy := perm
+		if perm.Vhost == "*" {
+			allVhostPerm = &permCopy
+		} else {
+			specPermMap[perm.Vhost] = &permCopy
+		}
+	}
+	if allVhostPerm != nil {
+		// Expand the * pseudo-vhost.
+		vhosts, err := rmqc.ListVhosts()
+		if err != nil {
+			return cu.Result{}, errors.Wrap(err, "error listing vhosts for * vhost permissions")
+		}
+		for _, vhost := range vhosts {
+			_, alreadySet := specPermMap[vhost.Name]
+			if !alreadySet {
+				specPermMap[vhost.Name] = allVhostPerm
+			}
+		}
+	}
+
 	// Get all Permissions for a vhost, user. Add all mentioned in spec and remove unwanted.
 	permissions, err := rmqc.ListPermissionsOf(username)
 	if err != nil {
 		return cu.Result{}, errors.Wrapf(err, "error listing permissions for user %s", username)
 	}
-	permMap := map[string]*rabbithole.PermissionInfo{}
+	existingPermMap := map[string]*rabbithole.PermissionInfo{}
 	for _, perm := range permissions {
-		permMap[perm.Vhost] = &perm
+		existingPermMap[perm.Vhost] = &perm
 	}
 
-	for _, perm := range obj.Spec.Permissions {
+	for vhostName, perm := range specPermMap {
 		var createPermissions, updatePermissions bool
 
-		existingPerm, ok := permMap[perm.Vhost]
+		existingPerm, ok := existingPermMap[vhostName]
 		if !ok {
 			createPermissions = true
 		} else {
 			// Delete the entry in permMap so we can use it as a double-ended diff too.
-			delete(permMap, perm.Vhost)
+			delete(existingPermMap, vhostName)
 			updatePermissions = existingPerm.Read != perm.Read || existingPerm.Write != perm.Write || existingPerm.Configure != perm.Configure
 		}
 
 		if createPermissions || updatePermissions {
-			_, err := rmqc.UpdatePermissionsIn(perm.Vhost, username, rabbithole.Permissions{
+			_, err := rmqc.UpdatePermissionsIn(vhostName, username, rabbithole.Permissions{
 				Configure: perm.Configure,
 				Read:      perm.Read,
 				Write:     perm.Write,
 			})
 			if err != nil {
-				return cu.Result{}, errors.Wrapf(err, "error updating permissions for user %s and vhost %s", username, perm.Vhost)
+				return cu.Result{}, errors.Wrapf(err, "error updating permissions for user %s and vhost %s", username, vhostName)
 			}
 
 			// Create an event.
@@ -90,12 +165,12 @@ func (comp *permissionsComponent) Reconcile(ctx *cu.Context) (cu.Result, error) 
 				event = "PermissionsUpdated"
 				eventMessage = "updated"
 			}
-			ctx.Events.Eventf(obj, "Normal", event, "RabbitMQ permissions for user %s in vhost %s %s", username, perm.Vhost, eventMessage)
+			ctx.Events.Eventf(obj, "Normal", event, "RabbitMQ permissions for user %s in vhost %s %s", username, vhostName, eventMessage)
 		}
 	}
 
 	//Remove any permissions that exist in RabbitMQ but not in the Spec.
-	for vhost := range permMap {
+	for vhost := range existingPermMap {
 		// 204 response code when permission is removed.
 		_, err := rmqc.ClearPermissionsIn(vhost, username)
 		if err != nil {
