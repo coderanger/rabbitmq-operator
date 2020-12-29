@@ -152,7 +152,7 @@ var _ = Describe("RabbitUser controller", func() {
 		Expect(secret.Data).To(HaveKeyWithValue("RABBIT_HOST", HaveSuffix("/"+vhost)))
 	})
 
-	FIt("sets vhost permissions on a newly created vhost when using * permissions", func() {
+	It("sets vhost permissions on a newly created vhost when using * permissions", func() {
 		c := helper.TestClient
 
 		vhost := &rabbitv1beta1.RabbitVhost{
