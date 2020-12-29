@@ -178,4 +178,66 @@ var _ = Describe("Permissions component", func() {
 		Expect(rabbit.Permissions).To(BeEmpty())
 		Expect(helper.Events).To(Receive(Equal("Normal PermissionsDeleted RabbitMQ permissions for user testing in vhost / deleted")))
 	})
+
+	It("decodes a * vhost as 'all vhosts'", func() {
+		rabbit.Vhosts = []*rabbithole.VhostInfo{
+			{
+				Name: "testing",
+			},
+		}
+		obj.Spec.Permissions[0].Vhost = "*"
+		helper.MustReconcile()
+		Expect(rabbit.Permissions).To(MatchAllKeys(Keys{
+			"testing": MatchAllKeys(Keys{
+				"testing": PointTo(MatchFields(IgnoreExtras, Fields{
+					"Read":      Equal(".*"),
+					"Write":     Equal(".*"),
+					"Configure": Equal(".*"),
+				})),
+			}),
+		}))
+		Expect(helper.Events).To(Receive(Equal("Normal PermissionsCreated RabbitMQ permissions for user testing in vhost testing created")))
+		Expect(obj).To(HaveCondition("PermissionsReady").WithStatus("True"))
+	})
+
+	It("doesn't overwrite a more specific vhost with the * permissions", func() {
+		rabbit.Vhosts = []*rabbithole.VhostInfo{
+			{
+				Name: "testing1",
+			},
+			{
+				Name: "testing2",
+			},
+		}
+		obj.Spec.Permissions = []rabbitv1beta1.RabbitPermission{
+			{
+				Vhost:     "testing1",
+				Read:      "foo",
+				Write:     "foo",
+				Configure: "foo",
+			},
+
+			{
+				Vhost:     "*",
+				Read:      "bar",
+				Write:     "bar",
+				Configure: "bar",
+			},
+		}
+		helper.MustReconcile()
+		Expect(rabbit.Permissions).To(MatchAllKeys(Keys{
+			"testing": MatchAllKeys(Keys{
+				"testing1": PointTo(MatchFields(IgnoreExtras, Fields{
+					"Read":      Equal("foo"),
+					"Write":     Equal("foo"),
+					"Configure": Equal("foo"),
+				})),
+				"testing2": PointTo(MatchFields(IgnoreExtras, Fields{
+					"Read":      Equal("bar"),
+					"Write":     Equal("bar"),
+					"Configure": Equal("bar"),
+				})),
+			}),
+		}))
+	})
 })

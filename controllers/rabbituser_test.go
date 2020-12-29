@@ -28,6 +28,7 @@ import (
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	ctrl "sigs.k8s.io/controller-runtime"
 
 	rabbitv1beta1 "github.com/coderanger/rabbitmq-operator/api/v1beta1"
 )
@@ -37,7 +38,10 @@ var _ = Describe("RabbitUser controller", func() {
 	var rmqc *rabbithole.Client
 
 	BeforeEach(func() {
-		helper = suiteHelper.MustStart(RabbitUser)
+		helper = suiteHelper.MustStart(RabbitUser, func(mgr ctrl.Manager) error {
+			// Launch the vhost webhooks because I need them for one test. Or rather I need creating a vhost object to not fail so I can test a watch map.
+			return ctrl.NewWebhookManagedBy(mgr).For(&rabbitv1beta1.RabbitVhost{}).Complete()
+		})
 		rmqc = connect()
 	})
 
@@ -146,5 +150,58 @@ var _ = Describe("RabbitUser controller", func() {
 		secret := &corev1.Secret{}
 		c.GetName("testing-rabbituser", secret)
 		Expect(secret.Data).To(HaveKeyWithValue("RABBIT_HOST", HaveSuffix("/"+vhost)))
+	})
+
+	It("sets vhost permissions on a newly created vhost when using * permissions", func() {
+		c := helper.TestClient
+
+		vhost := &rabbitv1beta1.RabbitVhost{
+			ObjectMeta: metav1.ObjectMeta{Name: "testing"},
+			Spec: rabbitv1beta1.RabbitVhostSpec{
+				VhostName: "testing-" + randstring.MustRandomString(5),
+				SkipUser:  true,
+			},
+		}
+
+		user := &rabbitv1beta1.RabbitUser{
+			ObjectMeta: metav1.ObjectMeta{Name: "testing"},
+			Spec: rabbitv1beta1.RabbitUserSpec{
+				Username: "testing-" + randstring.MustRandomString(5),
+				Tags:     "administrator",
+				Permissions: []rabbitv1beta1.RabbitPermission{
+					{
+						Vhost:     "*",
+						Configure: ".*",
+						Write:     ".*",
+						Read:      ".*",
+					},
+				},
+			},
+		}
+		c.Create(user)
+		c.EventuallyGetName("testing", user, c.EventuallyReady())
+
+		secret := &corev1.Secret{}
+		c.GetName("testing-rabbituser", secret)
+		rmqcUser := connectUser(user.Spec.Username, string(secret.Data["RABBIT_PASSWORD"]))
+
+		// Confirm that we can't see the vhost.
+		_, err := rmqcUser.GetVhost(vhost.Spec.VhostName)
+		Expect(err).To(HaveOccurred())
+
+		// Create the vhost object.
+		c.Create(vhost)
+
+		// Backdoor the actual creation since the vhost controller isn't running.
+		_, err = rmqc.PutVhost(vhost.Spec.VhostName, rabbithole.VhostSettings{})
+		Expect(err).ToNot(HaveOccurred())
+		defer func() {
+			_, err := rmqc.DeleteVhost(vhost.Spec.VhostName)
+			Expect(err).ToNot(HaveOccurred())
+		}()
+
+		// Should immediately (or almost immediately) be able to see it because of the watch map.
+		_, err = rmqcUser.GetVhost(vhost.Spec.VhostName)
+		Expect(err).ToNot(HaveOccurred())
 	})
 })
