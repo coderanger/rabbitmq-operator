@@ -71,10 +71,5 @@ func (obj *RabbitUser) validate() error {
 		seenVhosts[perm.Vhost] = true
 	}
 
-	// Check if it's safe to use output vhost mode.
-	if obj.Spec.OutputVhost && len(obj.Spec.Permissions) != 1 {
-		return errors.New("outputVhost can only be used with permissions for exactly one vhost")
-	}
-
 	return nil
 }

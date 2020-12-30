@@ -41,8 +41,7 @@ type RabbitUserSpec struct {
 	Tags        string             `json:"tags,omitempty"`
 	Permissions []RabbitPermission `json:"permissions,omitempty"`
 	// TODO TopicPermissions
-	OutputVhost bool             `json:"outputVhost,omitempty"`
-	Connection  RabbitConnection `json:"connection,omitempty"`
+	Connection RabbitConnection `json:"connection,omitempty"`
 }
 
 // RabbitUserStatus defines the observed state of RabbitUser

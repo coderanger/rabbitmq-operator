@@ -67,7 +67,10 @@ var _ = Describe("RabbitUser controller", func() {
 		secret := &corev1.Secret{}
 		c.GetName("testing-rabbituser", secret)
 		Expect(secret.Data).To(HaveKeyWithValue("RABBIT_PASSWORD", Not(BeEmpty())))
-		Expect(secret.Data).To(HaveKeyWithValue("RABBIT_HOST", Not(BeEmpty())))
+		Expect(secret.Data).To(HaveKeyWithValue("RABBIT_URL", Not(BeEmpty())))
+		Expect(secret.Data).ToNot(HaveKey("RABBIT_URL_VHOST"))
+		Expect(secret.Data).To(HaveKeyWithValue("RABBIT_HOSTNAME", Not(BeEmpty())))
+		Expect(secret.Data).To(HaveKeyWithValue("RABBIT_USERNAME", []byte(user.Spec.Username)))
 		rmqcUser := connectUser(user.Spec.Username, string(secret.Data["RABBIT_PASSWORD"]))
 		Expect(rmqcUser.Whoami()).ToNot(BeNil())
 
@@ -109,47 +112,14 @@ var _ = Describe("RabbitUser controller", func() {
 
 		secret := &corev1.Secret{}
 		c.GetName("testing-rabbituser", secret)
+		Expect(secret.Data).To(HaveKeyWithValue("RABBIT_URL", Not(BeEmpty())))
+		Expect(secret.Data).To(HaveKeyWithValue("RABBIT_URL_VHOST", append(secret.Data["RABBIT_URL"], '/')))
 		rmqcUser := connectUser(user.Spec.Username, string(secret.Data["RABBIT_PASSWORD"]))
 		Expect(rmqcUser.Whoami()).ToNot(BeNil())
 
 		vhosts, err := rmqcUser.ListVhosts()
 		Expect(err).ToNot(HaveOccurred())
 		Expect(vhosts).ToNot(BeEmpty())
-	})
-
-	It("writes the vhost into the secret when using outputVhost", func() {
-		c := helper.TestClient
-
-		vhost := "testing-" + randstring.MustRandomString(5)
-		_, err := rmqc.PutVhost(vhost, rabbithole.VhostSettings{})
-		Expect(err).ToNot(HaveOccurred())
-		defer func() {
-			_, err := rmqc.DeleteVhost(vhost)
-			Expect(err).ToNot(HaveOccurred())
-		}()
-
-		user := &rabbitv1beta1.RabbitUser{
-			ObjectMeta: metav1.ObjectMeta{Name: "testing"},
-			Spec: rabbitv1beta1.RabbitUserSpec{
-				Username:    "testing-" + randstring.MustRandomString(5),
-				Tags:        "management",
-				OutputVhost: true,
-				Permissions: []rabbitv1beta1.RabbitPermission{
-					{
-						Vhost:     vhost,
-						Configure: ".*",
-						Write:     ".*",
-						Read:      ".*",
-					},
-				},
-			},
-		}
-		c.Create(user)
-		c.EventuallyGetName("testing", user, c.EventuallyReady())
-
-		secret := &corev1.Secret{}
-		c.GetName("testing-rabbituser", secret)
-		Expect(secret.Data).To(HaveKeyWithValue("RABBIT_HOST", HaveSuffix("/"+vhost)))
 	})
 
 	It("sets vhost permissions on a newly created vhost when using * permissions", func() {

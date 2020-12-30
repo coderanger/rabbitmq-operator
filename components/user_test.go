@@ -186,6 +186,65 @@ var _ = Describe("User component", func() {
 		Expect(done).To(BeTrue())
 		Expect(rabbit.Users).To(BeEmpty())
 	})
+
+	It("sets Data.vhost when permissions for only one vhost are set", func() {
+		obj.Spec.Permissions = []rabbitv1beta1.RabbitPermission{
+			{
+				Vhost: "testing",
+			},
+		}
+		// Twice because the first exits early after creating.
+		helper.MustReconcile()
+		helper.MustReconcile()
+		Expect(helper.Ctx.Data).To(HaveKeyWithValue("vhost", "/testing"))
+	})
+
+	It("sets Data.vhost when permissions for only / vhost are set", func() {
+		obj.Spec.Permissions = []rabbitv1beta1.RabbitPermission{
+			{
+				Vhost: "/",
+			},
+		}
+		// Twice because the first exits early after creating.
+		helper.MustReconcile()
+		helper.MustReconcile()
+		Expect(helper.Ctx.Data).To(HaveKeyWithValue("vhost", "/"))
+	})
+
+	It("does not set Data.vhost when permissions for two vhosts are set", func() {
+		obj.Spec.Permissions = []rabbitv1beta1.RabbitPermission{
+			{
+				Vhost: "testing",
+			},
+			{
+				Vhost: "testing2",
+			},
+		}
+		// Twice because the first exits early after creating.
+		helper.MustReconcile()
+		helper.MustReconcile()
+		Expect(helper.Ctx.Data).ToNot(HaveKey("vhost"))
+	})
+
+	It("does not set Data.vhost when permissions for zero vhosts are set", func() {
+		obj.Spec.Permissions = []rabbitv1beta1.RabbitPermission{}
+		// Twice because the first exits early after creating.
+		helper.MustReconcile()
+		helper.MustReconcile()
+		Expect(helper.Ctx.Data).ToNot(HaveKey("vhost"))
+	})
+
+	It("does not set Data.vhost when permissions for all vhosts are set", func() {
+		obj.Spec.Permissions = []rabbitv1beta1.RabbitPermission{
+			{
+				Vhost: "*",
+			},
+		}
+		// Twice because the first exits early after creating.
+		helper.MustReconcile()
+		helper.MustReconcile()
+		Expect(helper.Ctx.Data).ToNot(HaveKey("vhost"))
+	})
 })
 
 var _ = Describe("hashRabbitPassword", func() {

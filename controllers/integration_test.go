@@ -96,7 +96,8 @@ var _ = Describe("Controller integration tests", func() {
 		// Try to connect as the restricted user.
 		secret := &corev1.Secret{}
 		c.GetName("testing-rabbituser", secret)
-		conn, err := amqp.Dial(string(secret.Data["RABBIT_HOST"]) + "/" + vhost.Spec.VhostName)
+		Expect(secret.Data).To(HaveKeyWithValue("RABBIT_URL_VHOST", Not(BeEmpty())))
+		conn, err := amqp.Dial(string(secret.Data["RABBIT_URL_VHOST"]))
 		Expect(err).ToNot(HaveOccurred())
 		defer conn.Close()
 		ch, err := conn.Channel()

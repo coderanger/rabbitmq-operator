@@ -140,11 +140,16 @@ func (comp *userComponent) Reconcile(ctx *cu.Context) (cu.Result, error) {
 	// Strip off the port so it uses the default AMQP port.
 	uri.Host = uri.Hostname()
 	uri.User = url.UserPassword(username, password)
-	// Set a path if needed.
-	if obj.Spec.OutputVhost {
-		uri.Path = obj.Spec.Permissions[0].Vhost
-	}
 	ctx.Data["uri"] = uri
+	ctx.Data["username"] = username
+	// If the user only has perms on one vhost, populate the RABBIT_URL_VHOST value for convenience.
+	if len(obj.Spec.Permissions) == 1 && obj.Spec.Permissions[0].Vhost != "*" {
+		vhost := obj.Spec.Permissions[0].Vhost
+		if vhost != "/" {
+			vhost = "/" + vhost
+		}
+		ctx.Data["vhost"] = vhost
+	}
 
 	// Good to go.
 	ctx.Conditions.SetfTrue("UserReady", "UserExists", "RabbitMQ user %s exists", username)

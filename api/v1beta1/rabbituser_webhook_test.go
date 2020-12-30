@@ -75,14 +75,5 @@ var _ = Describe("RabbitUser Webhook", func() {
 			err := obj.ValidateCreate()
 			Expect(err).To(MatchError("Duplicate permissions for vhost /"))
 		})
-
-		It("rejects outputVhost with multiple permissions", func() {
-			obj.Spec.OutputVhost = true
-			obj.Spec.Permissions = append(obj.Spec.Permissions, RabbitPermission{
-				Vhost: "other",
-			})
-			err := obj.ValidateCreate()
-			Expect(err).To(MatchError("outputVhost can only be used with permissions for exactly one vhost"))
-		})
 	})
 })
