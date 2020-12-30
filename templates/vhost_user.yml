@@ -1,14 +1,15 @@
 apiVersion: rabbitmq.coderanger.net/v1beta1
 kind: RabbitUser
 metadata:
-  name: {{ .Object.Name }}
+  name: {{ .Object.Name | quote }}
   annotations:
     controller-utils/condition: Ready
     controller-utils/delete: {{ .Object.Spec.SkipUser | default "false" | quote }}
 spec:
-  username: {{ .Object.Spec.VhostName }}
+  username: {{ .Object.Spec.VhostName | quote}}
+  outputVhost: true
   permissions:
-  - vhost: {{ .Object.Spec.VhostName }}
+  - vhost: {{ .Object.Spec.VhostName | quote }}
     configure: .*
     write: .*
     read: .*
